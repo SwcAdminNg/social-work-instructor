@@ -6,6 +6,7 @@ import { useSession } from "next-auth/react";
 import { ChevronDown, MessageSquare } from "lucide-react";
 import { useSidebar } from "./SidebarContext";
 import { IconMenu } from "./icons";
+import { NotificationCenter } from "./notifications/NotificationCenter";
 
 type DashboardOverviewCountEvent = CustomEvent<{
   unread_community_messages_count?: number;
@@ -111,6 +112,8 @@ export function DashboardHeader() {
       </div>
 
       <div className="flex flex-shrink-0 items-center gap-1.5 sm:gap-2">
+        <NotificationCenter />
+
         <Link
           href="/dashboard/community"
           aria-label="Messages"

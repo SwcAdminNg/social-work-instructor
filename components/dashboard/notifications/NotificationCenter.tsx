@@ -498,8 +498,7 @@ export function NotificationCenter() {
                 Nothing new yet
               </p>
               <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
-                Updates from courses, payments, support, and your account will
-                appear here.
+                Instructor updates and account notifications will appear here.
               </p>
             </div>
           ) : (
