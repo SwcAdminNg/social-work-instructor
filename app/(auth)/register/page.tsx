@@ -1,18 +1,14 @@
-import SignUp from "@/components/auth/SignUp";
 import { Suspense } from "react";
-import { fetchApi } from "@/lib/fetchApi";
+import InstructorApplication from "@/components/instructor/InstructorApplication";
 
-export default async function RegisterPage() {
-  const res = await fetchApi("/home/stats", { next: { revalidate: 3600 } });
-  let stats = null;
-  if (res.ok) {
-    const data = await res.json().catch(() => ({}));
-    stats = data?.data || null;
-  }
+export const metadata = {
+  title: "Become an Instructor | Social Work Nigeria",
+};
 
+export default function RegisterPage() {
   return (
     <Suspense fallback={null}>
-      <SignUp statsData={stats} />
+      <InstructorApplication />
     </Suspense>
   );
 }
