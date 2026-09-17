@@ -1,14 +1,11 @@
-import { Suspense } from "react";
-import InstructorCompleteSetup from "@/components/instructor/InstructorCompleteSetup";
+import { redirect } from "next/navigation";
 
-export const metadata = {
-  title: "Complete Instructor Setup | Social Work Nigeria",
-};
-
-export default function InstructorCompleteSetupPage() {
-  return (
-    <Suspense fallback={null}>
-      <InstructorCompleteSetup />
-    </Suspense>
-  );
+export default async function LegacyInstructorCompleteSetupPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ token?: string }>;
+}) {
+  const { token } = await searchParams;
+  const query = token ? `?token=${encodeURIComponent(token)}` : "";
+  redirect(`/complete-setup${query}`);
 }
