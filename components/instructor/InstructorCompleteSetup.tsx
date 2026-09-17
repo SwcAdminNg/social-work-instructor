@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
@@ -14,10 +14,15 @@ import {
   IconSpinner,
   IconUser,
 } from "@/components/auth/shared/icons";
+import { CheckCircle2, XCircle } from "lucide-react";
 
 type SetupStep =
   | { name: "form" }
   | { name: "two-factor"; challengeToken: string };
+
+type FieldErrors = Partial<
+  Record<"username" | "password" | "confirmPassword", string>
+>;
 
 function setupError(status: number, message?: string) {
   if (status === 400) {
@@ -36,11 +41,160 @@ export default function InstructorCompleteSetup() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
+  const [checkingUsername, setCheckingUsername] = useState(false);
+  const [usernameAvailable, setUsernameAvailable] = useState<boolean | null>(
+    null,
+  );
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [finalizeError, setFinalizeError] = useState("");
+  const usernameRef = useRef<HTMLInputElement>(null);
+  const passwordRef = useRef<HTMLInputElement>(null);
+  const confirmPasswordRef = useRef<HTMLInputElement>(null);
+
+  const usernamePattern = /^[a-z0-9_.]{3,30}$/;
+
+  useEffect(() => {
+    if (!username || username.length < 3 || !usernamePattern.test(username)) {
+      const timeout = window.setTimeout(() => {
+        setUsernameAvailable(null);
+        setCheckingUsername(false);
+      }, 0);
+      return () => window.clearTimeout(timeout);
+    }
+
+    const delay = window.setTimeout(async () => {
+      setCheckingUsername(true);
+      try {
+        const res = await fetch(
+          `/api/proxy/username/availability?username=${encodeURIComponent(username)}`,
+        );
+        const data = await res.json().catch(() => ({}));
+        if (res.ok && typeof data?.data?.available === "boolean") {
+          setUsernameAvailable(data.data.available);
+        } else {
+          setUsernameAvailable(null);
+        }
+      } catch {
+        setUsernameAvailable(null);
+      } finally {
+        setCheckingUsername(false);
+      }
+    }, 450);
+
+    return () => window.clearTimeout(delay);
+  }, [username]);
+
+  function setFieldError(field: keyof FieldErrors, message: string) {
+    setFieldErrors((current) => ({ ...current, [field]: message }));
+  }
+
+  function clearFieldError(field: keyof FieldErrors) {
+    if (!fieldErrors[field]) return;
+    setFieldErrors((current) => ({ ...current, [field]: undefined }));
+  }
+
+  function focusFirstIncomplete() {
+    if (!usernamePattern.test(username)) {
+      usernameRef.current?.focus();
+      return;
+    }
+    if (!password || password.length < 8 || password.length > 128) {
+      passwordRef.current?.focus();
+      return;
+    }
+    if (!confirmPassword || confirmPassword !== password) {
+      confirmPasswordRef.current?.focus();
+      return;
+    }
+    usernameRef.current?.focus();
+  }
+
+  function validateUsername({ requireAvailability = false } = {}) {
+    if (!usernamePattern.test(username)) {
+      setFieldError(
+        "username",
+        "Use 3-30 lowercase letters, numbers, dots, or underscores.",
+      );
+      usernameRef.current?.focus();
+      return false;
+    }
+    if (usernameAvailable === false) {
+      setFieldError("username", "Username is already taken.");
+      usernameRef.current?.focus();
+      return false;
+    }
+    if (requireAvailability && checkingUsername) {
+      setFieldError("username", "Please wait while we check this username.");
+      usernameRef.current?.focus();
+      return false;
+    }
+    clearFieldError("username");
+    return true;
+  }
+
+  function validatePassword() {
+    if (password.length < 8 || password.length > 128) {
+      setFieldError("password", "Password must be between 8 and 128 characters.");
+      passwordRef.current?.focus();
+      return false;
+    }
+    clearFieldError("password");
+    return true;
+  }
+
+  function validateConfirmPassword() {
+    if (password !== confirmPassword) {
+      setFieldError("confirmPassword", "Passwords do not match.");
+      confirmPasswordRef.current?.focus();
+      return false;
+    }
+    clearFieldError("confirmPassword");
+    return true;
+  }
+
+  function validateForm() {
+    if (!token) {
+      setError(
+        "This setup link is missing its token. Please use the link from your approval email.",
+      );
+      usernameRef.current?.focus();
+      return false;
+    }
+    setError("");
+    if (!validateUsername({ requireAvailability: true })) return false;
+    if (!validatePassword()) return false;
+    if (!validateConfirmPassword()) return false;
+    return true;
+  }
+
+  function handleFormKeyDown(event: React.KeyboardEvent<HTMLFormElement>) {
+    if (event.key !== "Enter") return;
+    const target = event.target as HTMLElement;
+    if (target.tagName !== "INPUT") return;
+    event.preventDefault();
+
+    if (target.id === "username") {
+      if (validateUsername()) passwordRef.current?.focus();
+      return;
+    }
+    if (target.id === "password") {
+      if (validatePassword()) confirmPasswordRef.current?.focus();
+      return;
+    }
+    if (target.id === "confirmPassword") {
+      if (validateConfirmPassword()) {
+        if (validateForm()) {
+          event.currentTarget.requestSubmit();
+        } else {
+          focusFirstIncomplete();
+        }
+      }
+    }
+  }
 
   async function finalizeSession(sessionData: unknown) {
     setFinalizeError("");
@@ -66,36 +220,23 @@ export default function InstructorCompleteSetup() {
   async function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
     setError("");
-
-    if (!token) {
-      setError("This setup link is missing its token. Please use the link from your approval email.");
-      return;
-    }
-    if (!/^[a-z0-9_.]{3,30}$/.test(username)) {
-      setError("Username must be 3-30 characters and can only use lowercase letters, numbers, dots, and underscores.");
-      return;
-    }
-    if (password.length < 8 || password.length > 128) {
-      setError("Password must be between 8 and 128 characters.");
-      return;
-    }
-    if (password !== confirmPassword) {
-      setError("Passwords do not match.");
-      return;
-    }
+    if (!validateForm()) return;
 
     setLoading(true);
     try {
-      const res = await fetch("/api/proxy/instructor-applications/complete-setup", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          token,
-          username,
-          password,
-          confirm_password: confirmPassword,
-        }),
-      });
+      const res = await fetch(
+        "/api/proxy/instructor-applications/complete-setup",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            token,
+            username,
+            password,
+            confirm_password: confirmPassword,
+          }),
+        },
+      );
       const json = await res.json().catch(() => ({}));
 
       if (!res.ok) {
@@ -161,29 +302,70 @@ export default function InstructorCompleteSetup() {
         </div>
       )}
 
-      <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-4">
+      <form
+        onSubmit={handleSubmit}
+        onKeyDown={handleFormKeyDown}
+        noValidate
+        className="flex flex-col gap-4"
+      >
         <FloatingInput
+          ref={usernameRef}
           id="username"
           label="Username"
           type="text"
           value={username}
-          onChange={(value) =>
-            setUsername(value.toLowerCase().replace(/[^a-z0-9_.]/g, ""))
-          }
+          onChange={(value) => {
+            setUsername(value.toLowerCase().replace(/[^a-z0-9_.]/g, ""));
+            setUsernameAvailable(null);
+            clearFieldError("username");
+          }}
           icon={<IconUser />}
           autoComplete="username"
           required
+          error={fieldErrors.username}
+          suffix={
+            checkingUsername ? (
+              <IconSpinner className="h-5 w-5 text-gray-400" />
+            ) : usernameAvailable === true ? (
+              <CheckCircle2 className="h-5 w-5 text-[#2D6A4F] dark:text-[#52b788]" />
+            ) : usernameAvailable === false ? (
+              <XCircle className="h-5 w-5 text-red-500" />
+            ) : null
+          }
         />
+        <div className="-mt-2 px-1 text-xs" aria-live="polite">
+          {usernameAvailable === true && (
+            <span className="font-semibold text-[#2D6A4F] dark:text-[#52b788]">
+              Username is available.
+            </span>
+          )}
+          {usernameAvailable === false && (
+            <span className="font-semibold text-red-500">
+              Username is already taken.
+            </span>
+          )}
+          {usernameAvailable === null && username.length > 0 && (
+            <span className="text-gray-500 dark:text-gray-400">
+              3-30 lowercase letters, numbers, dots, or underscores.
+            </span>
+          )}
+        </div>
 
         <FloatingInput
+          ref={passwordRef}
           id="password"
           label="Password"
           type={showPassword ? "text" : "password"}
           value={password}
-          onChange={setPassword}
+          onChange={(value) => {
+            setPassword(value);
+            clearFieldError("password");
+            if (confirmPassword) clearFieldError("confirmPassword");
+          }}
           icon={<IconLock />}
           autoComplete="new-password"
           required
+          error={fieldErrors.password}
           suffix={
             <PasswordToggle
               visible={showPassword}
@@ -193,14 +375,19 @@ export default function InstructorCompleteSetup() {
         />
 
         <FloatingInput
+          ref={confirmPasswordRef}
           id="confirmPassword"
           label="Confirm password"
           type={showConfirmPassword ? "text" : "password"}
           value={confirmPassword}
-          onChange={setConfirmPassword}
+          onChange={(value) => {
+            setConfirmPassword(value);
+            clearFieldError("confirmPassword");
+          }}
           icon={<IconLock />}
           autoComplete="new-password"
           required
+          error={fieldErrors.confirmPassword}
           suffix={
             <PasswordToggle
               visible={showConfirmPassword}

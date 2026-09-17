@@ -15,9 +15,8 @@ const roboto = Roboto({
 });
 
 export const metadata: Metadata = {
-  title: "Social Work Nigeria",
-  description:
-    "Professional Training & CPD for Social Work Practice in Nigeria",
+  title: "Social Work Nigeria Instructors",
+  description: "Instructor platform for Social Work Nigeria",
 };
 
 export default async function RootLayout({
