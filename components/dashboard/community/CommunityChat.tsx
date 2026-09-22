@@ -127,13 +127,8 @@ type DataResponse<T> = {
     total_pages?: number;
   };
 };
-type UnreadCountItem = {
-  community_id?: string;
-  communityId?: string;
-  id?: string;
-  unread_count?: number;
-  unreadCount?: number;
-  count?: number;
+type UnreadCountResponse = {
+  data?: { total_unread?: number };
 };
 
 const PAGE_SIZE = 20;
@@ -239,55 +234,9 @@ function unreadBadgeLabel(count: number) {
   return count > 99 ? "99+" : String(count);
 }
 
-function normalizeUnreadCounts(json: unknown): Record<string, number> {
-  const payload = json as {
-    data?: unknown;
-    communities?: unknown;
-    unread_counts?: unknown;
-    unreadCounts?: unknown;
-  };
-  const data = payload?.data as
-    | {
-        communities?: unknown;
-        unread_counts?: unknown;
-        unreadCounts?: unknown;
-      }
-    | unknown;
-  const source =
-    (data &&
-      typeof data === "object" &&
-      ("communities" in data || "unread_counts" in data || "unreadCounts" in data)
-      ? (data as {
-          communities?: unknown;
-          unread_counts?: unknown;
-          unreadCounts?: unknown;
-        }).communities ??
-        (data as { unread_counts?: unknown }).unread_counts ??
-        (data as { unreadCounts?: unknown }).unreadCounts
-      : data) ??
-    payload.communities ??
-    payload.unread_counts ??
-    payload.unreadCounts;
-  const next: Record<string, number> = {};
-
-  if (Array.isArray(source)) {
-    for (const item of source as UnreadCountItem[]) {
-      const communityId = item.community_id ?? item.communityId ?? item.id;
-      const count = item.unread_count ?? item.unreadCount ?? item.count;
-      if (communityId) next[communityId] = Math.max(0, Number(count) || 0);
-    }
-    return next;
-  }
-
-  if (source && typeof source === "object") {
-    for (const [communityId, count] of Object.entries(
-      source as Record<string, unknown>,
-    )) {
-      next[communityId] = Math.max(0, Number(count) || 0);
-    }
-  }
-
-  return next;
+function parseTotalUnread(json: unknown): number {
+  const total = (json as UnreadCountResponse)?.data?.total_unread;
+  return Math.max(0, Number(total) || 0);
 }
 
 function CommunityTypeIcon({ type }: { type: Community["type"] }) {
@@ -360,7 +309,7 @@ export default function CommunityChat({
   );
   const [mobileScreen, setMobileScreen] = useState<"list" | "chat">("list");
   const [mobileMembersOpen, setMobileMembersOpen] = useState(false);
-  const [unreadCounts, setUnreadCounts] = useState<Record<string, number>>({});
+  const [totalUnread, setTotalUnread] = useState(0);
   const [isAtBottom, setIsAtBottom] = useState(true);
   const [newMessageCount, setNewMessageCount] = useState(0);
   const [selectedMember, setSelectedMember] = useState<Member | null>(null);
@@ -504,7 +453,7 @@ export default function CommunityChat({
       const res = await fetch("/api/proxy/community/unread-count");
       const json = await res.json().catch(() => ({}));
       if (!res.ok) return;
-      setUnreadCounts(normalizeUnreadCounts(json));
+      setTotalUnread(parseTotalUnread(json));
     } catch {
       // Badges are additive; the room list should stay usable if this fails.
     }
@@ -522,9 +471,6 @@ export default function CommunityChat({
 
   const markRead = useCallback((communityId: string) => {
     if (!communityId) return;
-    setUnreadCounts((prev) =>
-      prev[communityId] ? { ...prev, [communityId]: 0 } : prev,
-    );
     fetch(`/api/proxy/community/${communityId}/read`, { method: "POST" })
       .catch(() => {})
       .finally(() => {
@@ -1272,6 +1218,12 @@ export default function CommunityChat({
                 className="h-10 w-full rounded-md border border-slate-200 bg-white pl-9 pr-3 text-sm text-slate-900 outline-none transition focus:border-[#2D6A4F] focus:ring-2 focus:ring-[#2D6A4F]/15 dark:border-slate-700 dark:bg-slate-950 dark:text-white"
               />
             </div>
+            {totalUnread > 0 && (
+              <p className="mt-2 px-1 text-xs font-semibold text-[#2D6A4F] dark:text-[#74c69d]">
+                {unreadBadgeLabel(totalUnread)} unread{" "}
+                {totalUnread === 1 ? "message" : "messages"} across your rooms
+              </p>
+            )}
           </div>
           <div className="swcl-sidebar-scroll flex-1 overflow-y-auto">
             {filteredCommunities.map((community) => (
@@ -1279,7 +1231,6 @@ export default function CommunityChat({
                 key={community.id}
                 community={community}
                 active={community.id === activeId}
-                unread={unreadCounts[community.id] || 0}
                 onClick={() => {
                   setActiveId(community.id);
                   setMobileScreen("chat");
@@ -1359,6 +1310,12 @@ export default function CommunityChat({
               className="h-10 w-full rounded-md border border-slate-200 bg-white pl-9 pr-3 text-sm text-slate-900 outline-none transition focus:border-[#2D6A4F] focus:ring-2 focus:ring-[#2D6A4F]/15 dark:border-slate-700 dark:bg-slate-950 dark:text-white"
             />
           </div>
+          {totalUnread > 0 && (
+            <p className="mt-2 px-1 text-xs font-semibold text-[#2D6A4F] dark:text-[#74c69d]">
+              {unreadBadgeLabel(totalUnread)} unread{" "}
+              {totalUnread === 1 ? "message" : "messages"} across your rooms
+            </p>
+          )}
 
           <div className="swcl-sidebar-scroll mt-3 min-h-0 flex-1 space-y-1 overflow-y-auto">
             {filteredCommunities.map((community) => (
@@ -1366,7 +1323,6 @@ export default function CommunityChat({
                 key={community.id}
                 community={community}
                 active={community.id === activeId}
-                unread={unreadCounts[community.id] || 0}
                 onClick={() => setActiveId(community.id)}
               />
             ))}
@@ -1610,12 +1566,10 @@ function MembersPanel({
 function MobileRoomRow({
   community,
   active,
-  unread,
   onClick,
 }: {
   community: Community;
   active: boolean;
-  unread: number;
   onClick: () => void;
 }) {
   return (
@@ -1650,7 +1604,6 @@ function MobileRoomRow({
             : ""}
         </span>
       </span>
-      <UnreadBadge count={unread} />
       <ChevronRight className="h-4 w-4 shrink-0 text-slate-300 dark:text-slate-600" />
     </button>
   );
@@ -1659,12 +1612,10 @@ function MobileRoomRow({
 function RoomButton({
   community,
   active,
-  unread,
   onClick,
 }: {
   community: Community;
   active: boolean;
-  unread: number;
   onClick: () => void;
 }) {
   return (
@@ -1696,26 +1647,10 @@ function RoomButton({
           {communityTypeLabel(community.type)}
         </span>
       </span>
-      {unread > 0 ? (
-        <UnreadBadge count={unread} />
-      ) : active ? (
+      {active ? (
         <Check className="h-4 w-4 shrink-0 text-[#2D6A4F] dark:text-[#74c69d]" />
       ) : null}
     </button>
-  );
-}
-
-function UnreadBadge({ count }: { count: number }) {
-  if (count <= 0) return null;
-
-  return (
-    <span
-      className="grid h-5 min-w-5 shrink-0 place-items-center rounded-full bg-[#2D6A4F] px-1.5 text-[10px] font-extrabold leading-none text-white dark:bg-[#74c69d] dark:text-slate-950"
-      aria-label={`${count} unread ${count === 1 ? "message" : "messages"}`}
-      title={`${count} unread ${count === 1 ? "message" : "messages"}`}
-    >
-      {unreadBadgeLabel(count)}
-    </span>
   );
 }
 
