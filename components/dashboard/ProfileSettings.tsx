@@ -14,6 +14,7 @@ import {
 import { useRouter, useSearchParams } from "next/navigation";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useSession } from "next-auth/react";
+import { InstructorDocumentsSettings } from "./InstructorDocumentsSettings";
 
 type ProfileUser = {
   first_name?: string | null;
@@ -24,6 +25,7 @@ type ProfileUser = {
   gender?: string | null;
   username?: string | null;
   profile_picture_url?: string | null;
+  cv_file_name?: string | null;
 };
 
 export function ProfileSettings() {
@@ -313,7 +315,7 @@ export function ProfileSettings() {
   }
 
   return (
-    <div className="max-w-4xl space-y-10 pb-12">
+    <div className="max-w-6xl space-y-10 pb-12">
       {/* Header */}
       <div>
         <h1 className="text-3xl font-extrabold text-gray-900 dark:text-white tracking-tight">
@@ -604,6 +606,8 @@ export function ProfileSettings() {
           </div>
         </div>
       </div>
+
+      <InstructorDocumentsSettings />
     </div>
   );
 }

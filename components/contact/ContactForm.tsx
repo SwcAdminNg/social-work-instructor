@@ -58,8 +58,12 @@ export function ContactForm() {
         message: "",
       });
       setTimeout(() => setSuccess(false), 5000);
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Failed to send message. Please try again.",
+      );
     } finally {
       setLoading(false);
     }
@@ -72,7 +76,7 @@ export function ContactForm() {
         {/* Contact Info Column */}
         <div className="w-full lg:w-5/12 flex flex-col justify-center">
           <h2 className="text-4xl md:text-5xl font-extrabold text-gray-900 dark:text-white mb-6 tracking-tight">
-            We'd love to hear from you
+            We&apos;d love to hear from you
           </h2>
           <p className="text-lg text-gray-600 dark:text-gray-400 mb-12 leading-relaxed font-medium">
             Whether you have a question about our courses, need support with your mentorship journey, or want to explore partnership opportunities, our team is ready to answer all your questions.
@@ -112,8 +116,8 @@ export function ContactForm() {
               <div>
                 <h4 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Email Address</h4>
                 <p className="text-gray-600 dark:text-gray-400 font-medium">
-                  support@socialworknigeria.com<br />
-                  info@socialworknigeria.com
+                  support@socialworknigeria.org<br />
+                  info@socialworknigeria.org
                 </p>
               </div>
             </div>
