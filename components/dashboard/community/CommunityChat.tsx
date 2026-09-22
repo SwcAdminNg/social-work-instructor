@@ -185,6 +185,20 @@ function staffRoleLabel(member?: Member | null) {
   return null;
 }
 
+function memberRoleLabel(member?: Member | null) {
+  const userType = memberProfile(member).user_type;
+  if (userType === "ADMIN") return "Admin";
+  if (userType === "INSTRUCTOR") return "Instructor";
+  if (userType === "USER") return "Member";
+  if (userType) {
+    return userType
+      .toLowerCase()
+      .replaceAll("_", " ")
+      .replace(/\b\w/g, (char) => char.toUpperCase());
+  }
+  return "Member";
+}
+
 function initials(name: string) {
   const parts = name.trim().split(/\s+/).filter(Boolean);
   return (parts[0]?.[0] || "C") + (parts[1]?.[0] || "");
@@ -349,6 +363,7 @@ export default function CommunityChat({
   const [unreadCounts, setUnreadCounts] = useState<Record<string, number>>({});
   const [isAtBottom, setIsAtBottom] = useState(true);
   const [newMessageCount, setNewMessageCount] = useState(0);
+  const [selectedMember, setSelectedMember] = useState<Member | null>(null);
 
   const wsRef = useRef<WebSocket | null>(null);
   const pendingSendsRef = useRef<Map<string, string>>(new Map());
@@ -1055,6 +1070,7 @@ export default function CommunityChat({
     loadingMembers,
     memberTotalItems,
     onlineIds,
+    onMemberClick: setSelectedMember,
   };
 
   const messagesArea = (
@@ -1113,6 +1129,7 @@ export default function CommunityChat({
                 message={message}
                 own={own}
                 onReply={() => setReplyTo(message)}
+                onMemberClick={setSelectedMember}
               />
             );
           })}
@@ -1385,6 +1402,11 @@ export default function CommunityChat({
           <MembersPanel {...membersPanelProps} />
         </aside>
       </div>
+
+      <UserProfileModal
+        member={selectedMember}
+        onClose={() => setSelectedMember(null)}
+      />
     </>
   );
 }
@@ -1403,6 +1425,7 @@ function MembersPanel({
   loadingMembers,
   memberTotalItems,
   onlineIds,
+  onMemberClick,
 }: {
   rosterExpanded: boolean;
   setRosterExpanded: (value: boolean) => void;
@@ -1417,6 +1440,7 @@ function MembersPanel({
   loadingMembers: boolean;
   memberTotalItems: number;
   onlineIds: Set<string>;
+  onMemberClick: (member: Member) => void;
 }) {
   return (
     <>
@@ -1496,6 +1520,7 @@ function MembersPanel({
                   : false) ||
                 Boolean(member.is_online)
               }
+              onClick={() => onMemberClick(member)}
             />
           ),
         )}
@@ -1698,10 +1723,12 @@ function MessageBubble({
   message,
   own,
   onReply,
+  onMemberClick,
 }: {
   message: Message;
   own: boolean;
   onReply: () => void;
+  onMemberClick: (member: Member) => void;
 }) {
   const name = displayName(message.sender);
   const staffLabel = staffRoleLabel(message.sender);
@@ -1715,13 +1742,27 @@ function MessageBubble({
         )}
       >
         {!own && (
-          <span className="flex items-center gap-1.5 px-1 text-xs font-bold text-slate-500 dark:text-slate-400">
+          <button
+            type="button"
+            onClick={() => message.sender && onMemberClick(message.sender)}
+            className="flex items-center gap-1.5 rounded px-1 text-left text-xs font-bold text-slate-500 transition hover:text-[#2D6A4F] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2D6A4F] dark:text-slate-400 dark:hover:text-[#74c69d]"
+          >
             {name}
             {staffLabel && <StaffBadge label={staffLabel} />}
-          </span>
+          </button>
         )}
         <div className="flex items-end gap-2">
-          {!own && <Avatar member={message.sender} size="sm" />}
+          {!own && (
+            <button
+              type="button"
+              onClick={() => message.sender && onMemberClick(message.sender)}
+              className="rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2D6A4F] focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-950"
+              aria-label={`View ${name}'s profile`}
+              title={`View ${name}'s profile`}
+            >
+              <Avatar member={message.sender} size="sm" />
+            </button>
+          )}
           <div
             className={cx(
               "rounded-lg px-3 py-2 text-sm leading-relaxed shadow-sm",
@@ -1932,16 +1973,22 @@ function ComposerChip({
 function MemberRow({
   member,
   online,
+  onClick,
 }: {
   member: Member;
   online: boolean;
+  onClick: () => void;
 }) {
   const firstName = memberFirstName(member);
   const username = memberUsername(member);
   const staffLabel = staffRoleLabel(member);
 
   return (
-    <div className="flex items-center gap-3 rounded-lg px-2 py-2">
+    <button
+      type="button"
+      onClick={onClick}
+      className="flex w-full items-center gap-3 rounded-lg px-2 py-2 text-left transition hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2D6A4F] dark:hover:bg-slate-900"
+    >
       <div className="relative">
         <Avatar member={member} />
         <span
@@ -1962,6 +2009,94 @@ function MemberRow({
             .join(" • ")}
         </p>
       </div>
+    </button>
+  );
+}
+
+function UserProfileModal({
+  member,
+  onClose,
+}: {
+  member: Member | null;
+  onClose: () => void;
+}) {
+  useEffect(() => {
+    if (!member) return;
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") onClose();
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [member, onClose]);
+
+  if (!member) return null;
+
+  const name = displayName(member);
+  const username = memberUsername(member);
+  const role = memberRoleLabel(member);
+  const profile = memberProfile(member);
+  const image = profile.profile_picture_url || profile.image;
+
+  return (
+    <div className="fixed inset-0 z-[70] flex items-end justify-center bg-slate-950/55 px-3 py-4 backdrop-blur-sm sm:items-center sm:px-6">
+      <button
+        type="button"
+        className="absolute inset-0 cursor-default"
+        onClick={onClose}
+        aria-label="Close profile"
+      />
+      <section
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="community-user-profile-title"
+        className="relative w-full max-w-md overflow-hidden rounded-2xl border border-white/70 bg-white shadow-2xl dark:border-slate-800 dark:bg-slate-950 sm:rounded-3xl"
+      >
+        <div className="h-24 bg-[#2D6A4F] dark:bg-[#1B4332]" />
+        <button
+          type="button"
+          onClick={onClose}
+          className="absolute right-3 top-3 grid h-9 w-9 place-items-center rounded-full bg-white/90 text-slate-500 shadow-sm transition hover:bg-white hover:text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white dark:bg-slate-950/85 dark:text-slate-300 dark:hover:bg-slate-900 dark:hover:text-white"
+          aria-label="Close profile"
+          title="Close"
+        >
+          <X className="h-4 w-4" />
+        </button>
+        <div className="-mt-12 px-5 pb-6 text-center sm:px-8 sm:pb-8">
+          <div className="mx-auto grid h-24 w-24 place-items-center overflow-hidden rounded-2xl border-4 border-white bg-slate-100 shadow-lg dark:border-slate-950 dark:bg-slate-900">
+            {image ? (
+              <img src={image} alt="" className="h-full w-full object-cover" />
+            ) : (
+              <span className="text-3xl font-black text-[#2D6A4F] dark:text-[#74c69d]">
+                {initials(name).toUpperCase()}
+              </span>
+            )}
+          </div>
+          <div className="mt-4 min-w-0">
+            <h2
+              id="community-user-profile-title"
+              className="break-words text-2xl font-black text-slate-950 dark:text-white"
+            >
+              {name}
+            </h2>
+            {username && (
+              <p className="mt-1 break-words text-sm font-semibold text-slate-500 dark:text-slate-400">
+                {username}
+              </p>
+            )}
+          </div>
+          <div className="mt-5 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-left dark:border-slate-800 dark:bg-slate-900/70">
+            <p className="text-[0.68rem] font-extrabold uppercase tracking-wide text-slate-400">
+              Role
+            </p>
+            <div className="mt-1 flex items-center gap-2 text-sm font-bold text-slate-900 dark:text-white">
+              <ShieldCheck className="h-4 w-4 text-[#2D6A4F] dark:text-[#74c69d]" />
+              <span>{role}</span>
+            </div>
+          </div>
+        </div>
+      </section>
     </div>
   );
 }
