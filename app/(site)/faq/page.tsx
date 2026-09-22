@@ -1,6 +1,6 @@
 import { Metadata } from "next";
 import { auth } from "@/auth";
-import { publicFetchApi } from "@/lib/fetchApi";
+import { fetchApi } from "@/lib/fetchApi";
 import { FAQHero } from "@/components/faq/FAQHero";
 import { FAQContent } from "@/components/faq/FAQContent";
 
@@ -15,7 +15,7 @@ export default async function FAQPage() {
 
   let categories = [];
   try {
-    const res = await publicFetchApi("/support/faq", {
+    const res = await fetchApi("/support/faq", {
       next: { revalidate: 0 },
     });
     if (res.ok) {

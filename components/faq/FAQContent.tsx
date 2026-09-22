@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 
 type FAQAudience = "STUDENT" | "INSTRUCTOR" | "BOTH";
+type FAQVisibility = "GENERAL" | "ACCOUNT";
 type AudienceFilter = "ALL" | FAQAudience;
 
 interface FAQItem {
@@ -20,6 +21,7 @@ interface FAQItem {
   answer: string;
   order: number;
   is_published: boolean;
+  visibility?: FAQVisibility;
   audience?: FAQAudience;
   keywords?: string[];
   escalation_route?: string;
