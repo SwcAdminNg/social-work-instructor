@@ -1,8 +1,14 @@
 "use client";
 
-import { SessionProvider, useSession, signOut } from "next-auth/react";
+import type { Session } from "next-auth";
+import { SessionProvider, useSession } from "next-auth/react";
 import { useEffect, useRef, useState } from "react";
 import { AlertTriangle } from "lucide-react";
+
+type MonitoredSession = Session & {
+  expiresAt?: unknown;
+  error?: unknown;
+};
 
 function SessionModal() {
   const { data: session, update } = useSession();
@@ -18,15 +24,17 @@ function SessionModal() {
     // If there is no session, or if NextAuth has already flagged an error, sign them out.
     if (!session) return;
 
-    if ((session as any).error === "RefreshAccessTokenError") {
-      signOut({ callbackUrl: "/login" });
+    const monitoredSession = session as MonitoredSession;
+
+    if (monitoredSession.error === "RefreshAccessTokenError") {
+      window.location.assign("/logout");
       return;
     }
 
-    const expiresAt = (session as any).expiresAt;
+    const expiresAt = monitoredSession.expiresAt;
     if (!expiresAt) return;
 
-    const expiryTime = expiresAt * 1000;
+    const expiryTime = Number(expiresAt) * 1000;
 
     const interval = setInterval(() => {
       const timeRemaining = expiryTime - Date.now();
@@ -51,7 +59,7 @@ function SessionModal() {
   };
 
   const handleLogout = async () => {
-    await signOut({ callbackUrl: "/login" });
+    window.location.assign("/logout");
   };
 
   if (!showModal) return null;
@@ -95,7 +103,7 @@ function SessionModal() {
   );
 }
 
-export default function SessionMonitor({ children, session }: { children: React.ReactNode, session: any }) {
+export default function SessionMonitor({ children, session }: { children: React.ReactNode, session: Session | null }) {
   return (
     <SessionProvider session={session}>
       {children}

@@ -2,7 +2,6 @@
 
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { signOut } from "next-auth/react";
 import { IconLogout } from "./icons";
 import { IconSpinner } from "@/components/auth/shared/icons";
 
@@ -19,7 +18,7 @@ export function LogoutButton({ isSidebar, collapsed }: LogoutButtonProps) {
 
   const handleLogout = async () => {
     setLoading(true);
-    await signOut({ callbackUrl: "/login" });
+    window.location.assign("/logout");
   };
 
   useEffect(() => {
