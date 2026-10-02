@@ -1,5 +1,9 @@
 import { AssessmentStudio } from "@/components/dashboard/instructor/AssessmentStudio";
-import type { ApiEnvelope, ManageCourse } from "@/components/dashboard/instructor/types";
+import type {
+  ApiEnvelope,
+  DashboardUserProfile,
+  ManageCourse,
+} from "@/components/dashboard/instructor/types";
 import { fetchApi } from "@/lib/fetchApi";
 
 export const metadata = {
@@ -20,6 +24,18 @@ async function readCourses() {
 }
 
 export default async function AssessmentsPage() {
-  const courses = await readCourses();
+  const profile = await (async () => {
+    try {
+      const res = await fetchApi("/users/me", { cache: "no-store" });
+      if (!res.ok) return null;
+      const json = (await res.json().catch(() => ({}))) as ApiEnvelope<DashboardUserProfile>;
+      return json.data ?? null;
+    } catch {
+      return null;
+    }
+  })();
+  const courses = profile?.access?.capabilities?.can_mark_essays
+    ? await readCourses()
+    : [];
   return <AssessmentStudio courses={courses} />;
 }

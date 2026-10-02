@@ -1,4 +1,5 @@
 import type { LucideIcon } from "lucide-react";
+import type { AccessCapabilities } from "@/components/dashboard/instructor/types";
 import {
   BookOpenCheck,
   ClipboardCheck,
@@ -13,6 +14,7 @@ export type NavItem = {
   href: string;
   icon: LucideIcon;
   disabled?: boolean;
+  requiredCapability?: keyof AccessCapabilities;
 };
 
 export type NavGroup = {
@@ -31,16 +33,19 @@ export const dashboardNavGroups: NavGroup[] = [
         label: "Course Studio",
         href: "/dashboard/courses",
         icon: BookOpenCheck,
+        requiredCapability: "can_edit_content",
       },
       {
         label: "Assessments",
         href: "/dashboard/assessments",
         icon: ClipboardCheck,
+        requiredCapability: "can_mark_essays",
       },
       {
         label: "Approval Centre",
         href: "/dashboard/approval-centre",
         icon: FileCheck2,
+        requiredCapability: "can_access_approval_centre",
       },
       {
         label: "Community",

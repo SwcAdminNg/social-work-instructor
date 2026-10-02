@@ -55,12 +55,24 @@ async function fetchJson<T>(url: string): Promise<T> {
 export function ApprovalCentre({
   initialCounts,
   initialRows,
+  initialView = "my_drafts",
+  reviewerMode = false,
 }: {
   initialCounts?: ApprovalCounts | null;
   initialRows?: ApprovalRow[];
+  initialView?: ViewKey;
+  reviewerMode?: boolean;
 }) {
-  const [view, setView] = useState<ViewKey>("awaiting_me");
+  const [view, setView] = useState<ViewKey>(initialView);
   const [kind, setKind] = useState<"ALL" | "COURSE_REVISION" | "ESSAY_MARK">("ALL");
+  const visibleViews = reviewerMode
+    ? views
+    : views.filter(
+        (item) =>
+          item.key !== "awaiting_me" &&
+          item.key !== "overdue" &&
+          item.key !== "ready_to_publish",
+      );
 
   const countsQuery = useQuery({
     queryKey: ["approval-counts"],
@@ -84,7 +96,7 @@ export function ApprovalCentre({
       return Array.isArray(json.data) ? json.data : [];
     },
     initialData:
-      view === "awaiting_me" && kind === "ALL" ? initialRows ?? [] : undefined,
+      view === initialView && kind === "ALL" ? initialRows ?? [] : undefined,
     staleTime: 20_000,
   });
 
@@ -119,7 +131,7 @@ export function ApprovalCentre({
 
       <div className="overflow-x-auto rounded-lg border border-slate-200 bg-white p-2 shadow-sm dark:border-[#262a3d] dark:bg-[#111525]">
         <div className="flex min-w-max gap-1">
-          {views.map((item) => {
+          {visibleViews.map((item) => {
             const Icon = item.icon;
             const active = item.key === view;
             const count =

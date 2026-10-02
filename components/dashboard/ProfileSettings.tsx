@@ -14,6 +14,7 @@ import {
 import { useRouter, useSearchParams } from "next/navigation";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useSession } from "next-auth/react";
+import type { UserAccess } from "@/components/dashboard/instructor/types";
 import { InstructorDocumentsSettings } from "./InstructorDocumentsSettings";
 
 type ProfileUser = {
@@ -26,6 +27,7 @@ type ProfileUser = {
   username?: string | null;
   profile_picture_url?: string | null;
   cv_file_name?: string | null;
+  access?: UserAccess | null;
 };
 
 export function ProfileSettings() {
@@ -114,6 +116,16 @@ export function ProfileSettings() {
     }
   }, [user, hasSynced]);
 
+  useEffect(() => {
+    if (!user || !("access" in user)) return;
+
+    const timeout = window.setTimeout(() => {
+      update({ access: user.access ?? null });
+    }, 0);
+
+    return () => window.clearTimeout(timeout);
+  }, [update, user]);
+
   // Username Availability Checker (Debounced)
   useEffect(() => {
     if (!newUsername || newUsername.length < 3) {
@@ -166,12 +178,16 @@ export function ProfileSettings() {
         }),
       });
 
+      const data = await res.json().catch(() => ({}));
+
       if (res.ok) {
         toast.success("Profile updated successfully!");
+        if ("access" in (data.data ?? {})) {
+          await update({ access: data.data.access ?? null });
+        }
         queryClient.invalidateQueries({ queryKey: ["profile"] });
         router.refresh();
       } else {
-        const data = await res.json();
         toast.error(data.message || "Failed to update profile.");
       }
     } catch {
@@ -198,14 +214,18 @@ export function ProfileSettings() {
         }),
       });
 
+      const data = await res.json().catch(() => ({}));
+
       if (res.ok) {
         toast.success("Username updated successfully!");
+        if ("access" in (data.data ?? {})) {
+          await update({ access: data.data.access ?? null });
+        }
         setCurrentUsername(newUsername);
         setUsernameAvailable(null);
         queryClient.invalidateQueries({ queryKey: ["profile"] });
         router.refresh();
       } else {
-        const data = await res.json();
         toast.error(data.message || "Failed to update username.");
       }
     } catch {

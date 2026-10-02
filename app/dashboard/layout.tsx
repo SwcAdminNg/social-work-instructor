@@ -1,11 +1,8 @@
 import { DashboardShell } from "@/components/dashboard/DashboardShell";
+import type { DashboardUserProfile } from "@/components/dashboard/instructor/types";
 import { fetchApi } from "@/lib/fetchApi";
 
-type DashboardUser = {
-  profile_picture_url?: string | null;
-};
-
-async function getDashboardUser(): Promise<DashboardUser | null> {
+async function getDashboardUser(): Promise<DashboardUserProfile | null> {
   try {
     const res = await fetchApi("/users/me", { cache: "no-store" });
     if (!res.ok) return null;
@@ -29,6 +26,7 @@ export default async function DashboardLayout({
       userHasProfilePicture={
         user ? Boolean(user.profile_picture_url) : undefined
       }
+      access={user?.access ?? null}
     >
       {children}
     </DashboardShell>

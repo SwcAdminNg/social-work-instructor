@@ -25,6 +25,40 @@ export type StaffPermissions = {
   permissions?: string[];
 };
 
+export type AccessCapabilities = {
+  can_create_courses?: boolean;
+  can_edit_content?: boolean;
+  can_submit_for_review?: boolean;
+  can_review_content?: boolean;
+  can_publish?: boolean;
+  can_archive?: boolean;
+  can_mark_essays?: boolean;
+  can_moderate_marks?: boolean;
+  can_approve_results?: boolean;
+  can_force_approve?: boolean;
+  can_manage_staff_roles?: boolean;
+  can_view_audit_log?: boolean;
+  can_access_approval_centre?: boolean;
+};
+
+export type UserAccess = StaffPermissions & {
+  owned_course_count?: number;
+  owned_course_permissions?: string[];
+  course_access?: {
+    course_id?: string;
+    course_title?: string;
+    roles?: string[];
+    permissions?: string[];
+  }[];
+  capabilities?: AccessCapabilities;
+};
+
+export type DashboardUserProfile = {
+  profile_picture_url?: string | null;
+  user_type?: string;
+  access?: UserAccess | null;
+};
+
 export type ApprovalCounts = {
   awaiting_me?: number;
   returned_to_me?: number;

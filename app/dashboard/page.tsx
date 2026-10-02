@@ -4,8 +4,8 @@ import type {
   ApiEnvelope,
   ApprovalCounts,
   ApprovalRow,
+  DashboardUserProfile,
   ManageCourse,
-  StaffPermissions,
 } from "@/components/dashboard/instructor/types";
 import { fetchApi } from "@/lib/fetchApi";
 
@@ -36,26 +36,32 @@ async function readList<T>(endpoint: string): Promise<T[]> {
 }
 
 export default async function DashboardPage() {
-  const [
-    adminOverview,
-    permissions,
-    approvalCounts,
-    approvalRows,
-    courses,
-  ] = await Promise.all([
-    readApi<AdminOverview>("/admin/dashboard/overview?limit=5"),
-    readApi<StaffPermissions>("/governance/me/permissions"),
-    readApi<ApprovalCounts>("/governance/approval-centre/counts"),
-    readList<ApprovalRow>(
-      "/governance/approval-centre?view=awaiting_me&page=1&page_size=5",
-    ),
-    readList<ManageCourse>("/courses/manage?page=1&page_size=8"),
-  ]);
+  const profile = await readApi<DashboardUserProfile>("/users/me");
+  const access = profile?.access ?? null;
+  const capabilities = access?.capabilities;
+
+  const [adminOverview, approvalCounts, approvalRows, courses] =
+    await Promise.all([
+      capabilities?.can_publish || capabilities?.can_manage_staff_roles
+        ? readApi<AdminOverview>("/admin/dashboard/overview?limit=5")
+        : Promise.resolve(null),
+      capabilities?.can_access_approval_centre
+        ? readApi<ApprovalCounts>("/governance/approval-centre/counts")
+        : Promise.resolve(null),
+      capabilities?.can_access_approval_centre
+        ? readList<ApprovalRow>(
+            "/governance/approval-centre?view=awaiting_me&page=1&page_size=5",
+          )
+        : Promise.resolve([]),
+      capabilities?.can_edit_content || capabilities?.can_mark_essays
+        ? readList<ManageCourse>("/courses/manage?page=1&page_size=8")
+        : Promise.resolve([]),
+    ]);
 
   return (
     <InstructorDashboard
       adminOverview={adminOverview}
-      permissions={permissions}
+      permissions={access}
       approvalCounts={approvalCounts}
       approvalRows={approvalRows}
       courses={courses}

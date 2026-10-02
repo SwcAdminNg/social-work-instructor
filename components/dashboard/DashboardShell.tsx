@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Camera, ShieldCheck } from "lucide-react";
+import type { UserAccess } from "@/components/dashboard/instructor/types";
 import { SidebarProvider, useSidebar } from "./SidebarContext";
 import { Sidebar } from "./Sidebar";
 import { DashboardHeader } from "./DashboardHeader";
@@ -40,9 +41,11 @@ function ProfilePhotoBanner() {
 function Content({
   children,
   userHasProfilePicture,
+  access,
 }: {
   children: React.ReactNode;
   userHasProfilePicture?: boolean;
+  access?: UserAccess | null;
 }) {
   const { collapsed } = useSidebar();
   const pathname = usePathname();
@@ -56,7 +59,7 @@ function Content({
         collapsed ? "lg:pl-[78px]" : "lg:pl-[252px]"
       }`}
     >
-      <DashboardHeader />
+      <DashboardHeader access={access} />
       <main className="flex-1 bg-[#f7f7fb] p-4 sm:p-6 dark:bg-[#0b0f1a]">
         {showPhotoBanner && <ProfilePhotoBanner />}
         {children}
@@ -68,15 +71,17 @@ function Content({
 export function DashboardShell({
   children,
   userHasProfilePicture,
+  access,
 }: {
   children: React.ReactNode;
   userHasProfilePicture?: boolean;
+  access?: UserAccess | null;
 }) {
   return (
     <SidebarProvider>
       <div className="min-h-screen bg-[#f7f7fb] dark:bg-[#0b0f1a]">
-        <Sidebar />
-        <Content userHasProfilePicture={userHasProfilePicture}>
+        <Sidebar access={access} />
+        <Content userHasProfilePicture={userHasProfilePicture} access={access}>
           {children}
         </Content>
       </div>

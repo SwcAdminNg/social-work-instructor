@@ -1,22 +1,26 @@
 import NextAuth, { CredentialsSignin, type DefaultSession, type User } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
+import type { UserAccess } from "@/components/dashboard/instructor/types";
 
 type LoginUser = User & {
   username?: string | null;
   accessToken: string;
   refreshToken: string;
   expiresAt: number;
+  access?: UserAccess | null;
 };
 
 type SessionUpdate = {
   action?: string;
   profile_picture_url?: string | null;
+  access?: UserAccess | null;
 };
 
 type AppSession = DefaultSession & {
   accessToken?: unknown;
   expiresAt?: unknown;
   error?: unknown;
+  access?: UserAccess | null;
   user: DefaultSession["user"] & {
     id?: string;
     username?: string | null;
@@ -64,6 +68,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
               accessToken: tokens.access_token,
               refreshToken: tokens.refresh_token,
               expiresAt: Math.floor(Date.now() / 1000) + (tokens.expires_in || 3600),
+              access: parsed.access ?? null,
             } satisfies LoginUser;
           } catch (error) {
             if (error instanceof CredentialsSignin) {
@@ -103,6 +108,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
               accessToken: response.data.tokens.access_token,
               refreshToken: response.data.tokens.refresh_token,
               expiresAt: Math.floor(Date.now() / 1000) + (response.data.tokens.expires_in || 3600),
+              access: response.data.access ?? null,
             } satisfies LoginUser;
           }
 
@@ -134,6 +140,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         token.accessToken = loginUser.accessToken;
         token.refreshToken = loginUser.refreshToken;
         token.expiresAt = loginUser.expiresAt;
+        token.access = loginUser.access ?? null;
       } 
       
       // Explicit manual refresh triggered by the client modal
@@ -161,6 +168,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         }
       } else if (trigger === "update" && "profile_picture_url" in (session ?? {})) {
         token.picture = (session as SessionUpdate).profile_picture_url ?? null;
+      } else if (trigger === "update" && "access" in (session ?? {})) {
+        token.access = (session as SessionUpdate).access ?? null;
       } 
       // If token is expired and NO manual refresh was triggered, flag it as error so client logs out
       else if (token.expiresAt && Math.floor(Date.now() / 1000) > (token.expiresAt as number)) {
@@ -178,6 +187,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         appSession.accessToken = token.accessToken;
         appSession.expiresAt = token.expiresAt; // Pass expiry time to client
         appSession.error = token.error;
+        appSession.access = (token.access as UserAccess | null | undefined) ?? null;
       }
       return session;
     },

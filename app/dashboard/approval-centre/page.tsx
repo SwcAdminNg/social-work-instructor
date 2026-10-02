@@ -3,6 +3,7 @@ import type {
   ApiEnvelope,
   ApprovalCounts,
   ApprovalRow,
+  DashboardUserProfile,
 } from "@/components/dashboard/instructor/types";
 import { fetchApi } from "@/lib/fetchApi";
 
@@ -22,14 +23,31 @@ async function readApi<T>(endpoint: string): Promise<T | null> {
 }
 
 export default async function ApprovalCentrePage() {
-  const [counts, rows] = await Promise.all([
-    readApi<ApprovalCounts>("/governance/approval-centre/counts"),
-    readApi<ApprovalRow[]>(
-      "/governance/approval-centre?view=awaiting_me&page=1&page_size=30",
-    ),
-  ]);
+  const profile = await readApi<DashboardUserProfile>("/users/me");
+  const capabilities = profile?.access?.capabilities;
+  const reviewerMode = Boolean(
+    capabilities?.can_review_content ||
+      capabilities?.can_moderate_marks ||
+      capabilities?.can_approve_results ||
+      capabilities?.can_publish,
+  );
+  const initialView = reviewerMode ? "awaiting_me" : "my_drafts";
+
+  const [counts, rows] = capabilities?.can_access_approval_centre
+    ? await Promise.all([
+        readApi<ApprovalCounts>("/governance/approval-centre/counts"),
+        readApi<ApprovalRow[]>(
+          `/governance/approval-centre?view=${initialView}&page=1&page_size=30`,
+        ),
+      ])
+    : [null, [] as ApprovalRow[]];
 
   return (
-    <ApprovalCentre initialCounts={counts} initialRows={rows ?? []} />
+    <ApprovalCentre
+      initialCounts={counts}
+      initialRows={rows ?? []}
+      initialView={initialView}
+      reviewerMode={reviewerMode}
+    />
   );
 }

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { useSession } from "next-auth/react";
 import { ChevronDown, MessageSquare } from "lucide-react";
+import type { UserAccess } from "@/components/dashboard/instructor/types";
 import { useSidebar } from "./SidebarContext";
 import { IconMenu } from "./icons";
 import { NotificationCenter } from "./notifications/NotificationCenter";
@@ -16,7 +17,19 @@ function badgeLabel(count: number) {
   return count > 99 ? "99+" : String(count);
 }
 
-export function DashboardHeader() {
+function primaryRoleLabel(access?: UserAccess | null) {
+  const roles = access?.roles?.map((role) => role.role).filter(Boolean) ?? [];
+  const courseRoles = access?.course_access?.flatMap((course) => course.roles ?? []) ?? [];
+  const role = roles[0] ?? courseRoles[0];
+
+  if (role) return role.replaceAll("_", " ");
+  if (access?.capabilities?.can_publish) return "Platform admin";
+  if (access?.capabilities?.can_review_content) return "Reviewer";
+  if (access?.capabilities?.can_mark_essays) return "Instructor";
+  return "Dashboard";
+}
+
+export function DashboardHeader({ access }: { access?: UserAccess | null }) {
   const { data: session } = useSession();
   const { setMobileOpen, toggleCollapsed } = useSidebar();
   const [profileOpen, setProfileOpen] = useState(false);
@@ -32,6 +45,7 @@ export function DashboardHeader() {
   const avatarUrl = session?.user?.image;
   const avatarImageUrl =
     avatarUrl && avatarUrl !== failedAvatarUrl ? avatarUrl : null;
+  const roleLabel = primaryRoleLabel(access);
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
@@ -150,7 +164,7 @@ export function DashboardHeader() {
                 {displayName}
               </span>
               <span className="text-xs font-medium text-slate-500 dark:text-slate-400">
-                Instructor
+                {roleLabel}
               </span>
             </span>
             <ChevronDown

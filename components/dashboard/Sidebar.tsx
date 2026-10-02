@@ -5,6 +5,7 @@ import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { ExternalLink, Globe, Moon, Sun } from "lucide-react";
 import { useTheme } from "@/components/generic/ThemeProvider";
+import type { UserAccess } from "@/components/dashboard/instructor/types";
 import { dashboardNavGroups, type NavItem } from "./nav-items";
 import { useSidebar } from "./SidebarContext";
 import { IconChevronsLeft, IconClose } from "./icons";
@@ -15,7 +16,16 @@ function isActive(pathname: string, href: string) {
   return pathname === href || pathname.startsWith(`${href}/`);
 }
 
-export function Sidebar() {
+function canShowNavItem(item: NavItem, access?: UserAccess | null) {
+  const capabilities = access?.capabilities;
+
+  if (!item.requiredCapability) return true;
+  if (!capabilities) return true;
+
+  return Boolean(capabilities[item.requiredCapability]);
+}
+
+export function Sidebar({ access }: { access?: UserAccess | null }) {
   const pathname = usePathname();
   const { mobileOpen, setMobileOpen, collapsed, toggleCollapsed } =
     useSidebar();
@@ -151,11 +161,13 @@ export function Sidebar() {
                   </p>
                 )}
                 <ul className="m-0 flex list-none flex-col gap-1 p-0">
-                  {group.items.map((item) => (
-                    <li key={item.href}>
-                      <NavLink item={item} />
-                    </li>
-                  ))}
+                  {group.items
+                    .filter((item) => canShowNavItem(item, access))
+                    .map((item) => (
+                      <li key={item.href}>
+                        <NavLink item={item} />
+                      </li>
+                    ))}
                 </ul>
               </section>
             ))}
