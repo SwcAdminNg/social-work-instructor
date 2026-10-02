@@ -1,5 +1,8 @@
 import type { LucideIcon } from "lucide-react";
 import {
+  BookOpenCheck,
+  ClipboardCheck,
+  FileCheck2,
   LayoutDashboard,
   Settings,
   UsersRound,
@@ -24,6 +27,21 @@ export const dashboardNavGroups: NavGroup[] = [
   {
     label: "Workspace",
     items: [
+      {
+        label: "Course Studio",
+        href: "/dashboard/courses",
+        icon: BookOpenCheck,
+      },
+      {
+        label: "Assessments",
+        href: "/dashboard/assessments",
+        icon: ClipboardCheck,
+      },
+      {
+        label: "Approval Centre",
+        href: "/dashboard/approval-centre",
+        icon: FileCheck2,
+      },
       {
         label: "Community",
         href: "/dashboard/community",
