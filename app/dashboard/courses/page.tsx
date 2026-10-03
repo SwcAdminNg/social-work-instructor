@@ -1,41 +1,23 @@
-import { CourseStudio } from "@/components/dashboard/instructor/CourseStudio";
-import type {
-  ApiEnvelope,
-  DashboardUserProfile,
-  ManageCourse,
-} from "@/components/dashboard/instructor/types";
-import { fetchApi } from "@/lib/fetchApi";
+import { CourseLibrary } from "@/components/studio/courses/CourseLibrary";
+import { readApprovalRows, readMe, readPage } from "@/components/studio/courses/serverData";
+import type { ManagedCourse } from "@/lib/studio/types";
 
 export const metadata = {
-  title: "Course Studio | Social Work Nigeria",
+  title: "My courses | Social Work Nigeria",
 };
 
-async function readCourses() {
-  try {
-    const res = await fetchApi("/courses/manage?page=1&page_size=50", {
-      cache: "no-store",
-    });
-    if (!res.ok) return [];
-    const json = (await res.json().catch(() => ({}))) as ApiEnvelope<ManageCourse[]>;
-    return Array.isArray(json.data) ? json.data : [];
-  } catch {
-    return [];
-  }
-}
-
 export default async function CoursesPage() {
-  const profile = await (async () => {
-    try {
-      const res = await fetchApi("/users/me", { cache: "no-store" });
-      if (!res.ok) return null;
-      const json = (await res.json().catch(() => ({}))) as ApiEnvelope<DashboardUserProfile>;
-      return json.data ?? null;
-    } catch {
-      return null;
-    }
-  })();
-  const courses = profile?.access?.capabilities?.can_edit_content
-    ? await readCourses()
-    : [];
-  return <CourseStudio courses={courses} />;
+  const me = await readMe();
+  const access = me?.access;
+  const caps = access?.capabilities ?? {};
+  const governed = access?.governance_enabled !== false;
+  const inbox = governed && !!caps.can_access_approval_centre;
+
+  const [courses, drafts, returned] = await Promise.all([
+    caps.can_edit_content ? readPage<ManagedCourse>("/courses/manage?page=1&page_size=50") : Promise.resolve(null),
+    inbox ? readApprovalRows("my_drafts", 100, "COURSE_REVISION") : Promise.resolve(null),
+    inbox ? readApprovalRows("returned_to_me", 100, "COURSE_REVISION") : Promise.resolve(null),
+  ]);
+
+  return <CourseLibrary initialCourses={courses} initialDrafts={drafts} initialReturned={returned} />;
 }

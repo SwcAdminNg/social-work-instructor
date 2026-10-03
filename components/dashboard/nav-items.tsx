@@ -30,7 +30,7 @@ export const dashboardNavGroups: NavGroup[] = [
     label: "Workspace",
     items: [
       {
-        label: "Course Studio",
+        label: "My courses",
         href: "/dashboard/courses",
         icon: BookOpenCheck,
         requiredCapability: "can_edit_content",
@@ -70,13 +70,25 @@ export const dashboardNavItems = dashboardNavGroups.flatMap(
   (group) => group.items,
 );
 
+/** Titles for nested routes that aren't nav entries (most specific first). */
+const NESTED_TITLES: [RegExp, string][] = [
+  [/^\/dashboard\/courses\/new\/?$/, "New course"],
+  [/^\/dashboard\/courses\/[^/]+/, "Course editor"],
+  [/^\/dashboard\/approval-centre\/revisions\/[^/]+/, "Review"],
+  [/^\/dashboard\/approval-centre\/marks\/[^/]+/, "Essay mark"],
+  [/^\/dashboard\/assessments\/[^/]+/, "Marking"],
+];
+
 export function getPageTitle(pathname: string): string {
   const exact = dashboardNavItems.find((item) => item.href === pathname);
   if (exact) return exact.label;
 
+  const special = NESTED_TITLES.find(([re]) => re.test(pathname));
+  if (special) return special[1];
+
   const nested = dashboardNavItems
     .filter(
-      (item) => item.href !== "/dashboard" && pathname.startsWith(item.href),
+      (item) => item.href !== "/dashboard" && pathname.startsWith(`${item.href}/`),
     )
     .sort((a, b) => b.href.length - a.href.length)[0];
 

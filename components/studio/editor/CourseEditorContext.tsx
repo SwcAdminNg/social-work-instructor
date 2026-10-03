@@ -76,6 +76,9 @@ export function CourseEditorProvider({
     queryFn: () => studioApi.getCourse(courseId, layer),
     initialData: layer === initialLayer && initialCourse ? initialCourse : undefined,
     staleTime: 10_000,
+    // Keep showing the current tree while switching Draft ⇄ Live instead of
+    // flashing the whole editor back to a skeleton.
+    placeholderData: (prev) => prev,
     // Poll while a video is still processing so status flips to READY on its own.
     refetchInterval: (q) => {
       const c = q.state.data as ManagedCourse | undefined;
