@@ -80,6 +80,8 @@ const FIELD_LABELS: Record<string, string> = {
   requirements: "Requirements",
   prerequisite: "Prerequisite",
   certificate_enabled: "Certificate",
+  certificate_pass_mark_percentage: "Certificate pass mark (%)",
+  certificate_template_id: "Certificate design",
   section_id: "Module",
   file_name: "File",
   url: "URL",

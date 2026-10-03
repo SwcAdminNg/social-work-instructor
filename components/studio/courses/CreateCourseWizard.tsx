@@ -54,6 +54,7 @@ import { ApiError, studioApi } from "@/lib/studio/api";
 import { CATEGORY_LABELS, LEVEL_LABELS, formatDateTime, formatMoney, fromLocalInput } from "@/lib/studio/labels";
 import type { AccessMode, CourseCategory, CourseLevel, CoursePayload } from "@/lib/studio/types";
 import { CATEGORY_ICONS, CourseCover } from "./CourseCover";
+import { DEFAULT_CERTIFICATE_PASS_MARK, PassMarkControl } from "../editor/PassMarkControl";
 import { StringListField, cleanList } from "./StringListField";
 
 /* ───────────────────────── Form model ───────────────────────── */
@@ -74,6 +75,7 @@ type FormState = {
   access_start_date: string;
   access_end_date: string;
   certificate_enabled: boolean;
+  certificate_pass_mark_percentage: number;
 };
 
 type FieldKey = keyof FormState;
@@ -95,6 +97,7 @@ const INITIAL: FormState = {
   access_start_date: "",
   access_end_date: "",
   certificate_enabled: false,
+  certificate_pass_mark_percentage: DEFAULT_CERTIFICATE_PASS_MARK,
 };
 
 const STEPS: { key: string; label: string; description: string; icon: LucideIcon }[] = [
@@ -120,6 +123,7 @@ const FIELD_STEP: Record<FieldKey, number> = {
   access_start_date: 2,
   access_end_date: 2,
   certificate_enabled: 2,
+  certificate_pass_mark_percentage: 2,
 };
 
 const LEVEL_CHOICES: { key: CourseLevel; icon: LucideIcon; description: string }[] = [
@@ -168,6 +172,7 @@ function toPayload(f: FormState): CoursePayload {
     is_exclusive: f.is_exclusive,
     access_mode: f.access_mode,
     certificate_enabled: f.certificate_enabled,
+    certificate_pass_mark_percentage: f.certificate_pass_mark_percentage,
   };
   if (f.prerequisite.trim()) payload.prerequisite = f.prerequisite.trim();
   if (!f.is_free) payload.price = Number(f.price);
@@ -717,8 +722,21 @@ function PricingStep({ form, errors, set }: StepProps) {
               <Award className="h-4 w-4 text-brand-600 dark:text-brand-300" strokeWidth={2} /> Award a certificate
             </span>
           }
-          description="Learners receive a certificate when they complete the course. You can fine-tune the rules in the editor."
+          description="Learners earn a certificate when they finish every lesson and reach the pass mark. You can change this later in the editor."
         />
+        {form.certificate_enabled && (
+          <div className="mt-4 animate-fade-in border-t border-slate-100 pt-4 dark:border-ink-line">
+            <p className="text-[13px] font-semibold text-slate-700 dark:text-slate-200">Pass mark</p>
+            <p className="mb-3 mt-0.5 text-xs leading-5 text-slate-500 dark:text-slate-400">
+              The overall score needed — the average of each learner&apos;s best score on every assessment.
+            </p>
+            <PassMarkControl
+              compact
+              value={form.certificate_pass_mark_percentage}
+              onChange={(v) => set("certificate_pass_mark_percentage", v)}
+            />
+          </div>
+        )}
       </div>
     </div>
   );
@@ -764,7 +782,9 @@ function ReviewStep({
             ? "Self-paced"
             : `${formatDateTime(fromLocalInput(form.access_start_date))} → ${formatDateTime(fromLocalInput(form.access_end_date))}`}
         </SummaryRow>
-        <SummaryRow label="Certificate">{form.certificate_enabled ? "Awarded on completion" : "Off"}</SummaryRow>
+        <SummaryRow label="Certificate">
+          {form.certificate_enabled ? `Awarded on completion with ${form.certificate_pass_mark_percentage}% or more overall` : "Off"}
+        </SummaryRow>
       </SummarySection>
 
       <Callout tone="brand" icon={ShieldCheck} title="Nothing is visible to learners yet">
@@ -853,7 +873,7 @@ function LivePreview({ form }: { form: FormState }) {
             </Badge>
             {form.certificate_enabled && (
               <Badge tone="success" size="xs" icon={BadgeCheck}>
-                Certificate
+                Certificate · {form.certificate_pass_mark_percentage}%
               </Badge>
             )}
             {form.is_exclusive && (

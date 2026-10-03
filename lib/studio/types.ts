@@ -147,6 +147,8 @@ export type Course = {
   access_start_date?: string | null;
   access_end_date?: string | null;
   certificate_enabled?: boolean;
+  /** Overall score (average of best scores on every assessment) needed for the certificate. Default 70. */
+  certificate_pass_mark_percentage?: number;
   governance_status?: Lifecycle;
   current_version_label?: string;
   instructors?: InstructorCredit[];
@@ -197,6 +199,8 @@ export type CoursePayload = {
   access_start_date?: string | null;
   access_end_date?: string | null;
   certificate_enabled?: boolean;
+  /** Overall score (average of best scores on every assessment) needed for the certificate. Default 70. */
+  certificate_pass_mark_percentage?: number;
 };
 
 /* ───────────────────────── Curriculum ───────────────────────── */
