@@ -1,5 +1,9 @@
 import { proxyApi } from "@/lib/proxyApi";
 
+// AI quiz drafting can take over a minute (the API gives the provider 60s),
+// so let platforms that honour this keep the relay open long enough.
+export const maxDuration = 120;
+
 function endpointFromRequest(request: Request, path: string[]) {
   const url = new URL(request.url);
   const query = url.searchParams.toString();
