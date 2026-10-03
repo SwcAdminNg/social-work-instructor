@@ -3,6 +3,7 @@
 import { useId, useState } from "react";
 import { ArrowLeft, FileText, Film, Flag, Plus, RefreshCw, X } from "lucide-react";
 import { Button, Callout, ChoiceCard, cn, Field, Input, Segmented, Switch, Textarea } from "@/components/ui/primitives";
+import { DatePicker } from "@/components/ui/date-picker";
 import { Dialog } from "@/components/ui/overlays";
 import { ApiError, studioApi } from "@/lib/studio/api";
 import { formatBytes, fromLocalInput } from "@/lib/studio/labels";
@@ -398,7 +399,7 @@ export function AddItemDialog({
             <>
               <div className="grid gap-4 sm:grid-cols-[1fr_10rem]">
                 <Field label="Starts at" htmlFor={fid("start")} required error={errors.start} hint="Your local time.">
-                  <Input id={fid("start")} type="datetime-local" value={start} invalid={!!errors.start} onChange={(e) => setStart(e.target.value)} />
+                  <DatePicker id={fid("start")} value={start} onChange={setStart} min={new Date()} invalid={!!errors.start} title="When does the session start?" />
                 </Field>
                 <Field label="Length (minutes)" htmlFor={fid("dur")} required error={errors.duration}>
                   <Input id={fid("dur")} type="number" min={5} max={600} step={5} value={duration} invalid={!!errors.duration} onChange={(e) => setDuration(e.target.value)} />
@@ -470,7 +471,7 @@ export function AddItemDialog({
                   />
                 )}
                 <Field label="Due date" htmlFor={fid("due")} optional>
-                  <Input id={fid("due")} type="datetime-local" value={dueDate} onChange={(e) => setDueDate(e.target.value)} className="sm:max-w-xs" />
+                  <DatePicker id={fid("due")} value={dueDate} onChange={setDueDate} clearable defaultTime={{ hour: 23, minute: 59 }} placeholder="No due date" title="Due date" className="sm:max-w-xs" />
                 </Field>
               </div>
             </div>

@@ -3,6 +3,7 @@
 import { useId, useMemo, useState } from "react";
 import { CalendarClock, Download, ExternalLink, Eye, FileText, Flag, Lock, Radio, Trash2, Zap } from "lucide-react";
 import { Badge, Button, Callout, Card, cn, Field, Input, Switch, Textarea, toneClasses } from "@/components/ui/primitives";
+import { DatePicker } from "@/components/ui/date-picker";
 import { ConfirmDialog, Sheet } from "@/components/ui/overlays";
 import { AssessmentEditor } from "@/components/studio/assessments/AssessmentEditor";
 import { studioApi } from "@/lib/studio/api";
@@ -482,13 +483,14 @@ function ItemEditorBody({
                   error={errors.start}
                   hint={item.live_session?.scheduled_start_at ? `Currently ${formatDateTime(item.live_session.scheduled_start_at)}` : "Your local time."}
                 >
-                  <Input
+                  <DatePicker
                     id={fid("start")}
-                    type="datetime-local"
                     value={v.start}
+                    onChange={(value) => draft.set("start", value)}
+                    min={new Date()}
                     disabled={!canEditLive}
                     invalid={!!errors.start}
-                    onChange={(e) => draft.set("start", e.target.value)}
+                    title="When does the session start?"
                   />
                 </Field>
                 <Field label="Length (minutes)" htmlFor={fid("dur")} error={errors.duration}>

@@ -21,6 +21,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { Button, Callout, Checkbox, Field, Input, Segmented, Textarea, cn } from "@/components/ui/primitives";
+import { DatePicker } from "@/components/ui/date-picker";
 import { Dialog, Menu, type MenuItem } from "@/components/ui/overlays";
 import { RiskBadge } from "@/components/studio/StatusBadges";
 import { studioApi } from "@/lib/studio/api";
@@ -410,7 +411,7 @@ function ActionDialog({
               <Input id="assign-reviewer" value={reviewerId} onChange={(e) => setReviewerId(e.target.value)} placeholder="e.g. 5bf9c2e0-…" autoFocus className="font-mono text-[13px]" />
             </Field>
             <Field label="Due" optional htmlFor="assign-due" hint="Leave empty to keep the standard review deadline.">
-              <Input id="assign-due" type="datetime-local" value={due} onChange={(e) => setDue(e.target.value)} />
+              <DatePicker id="assign-due" value={due} onChange={setDue} min={new Date()} clearable title="Review due by" defaultTime={{ hour: 17, minute: 0 }} placeholder="Standard review deadline" />
             </Field>
           </>
         )}

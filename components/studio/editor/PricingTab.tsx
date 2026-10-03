@@ -4,8 +4,9 @@ import { useId, useMemo, useState } from "react";
 import { ArrowDown, ArrowUp, CalendarRange, ImageIcon, Infinity as InfinityIcon, Lock, Plus, Sparkles, Tag, Users, X, Zap } from "lucide-react";
 import { toast } from "sonner";
 import { Avatar, Badge, Button, Callout, Card, CardHeader, ChoiceCard, cn, Field, Input, ProgressBar, Segmented, Switch } from "@/components/ui/primitives";
+import { DateRangePicker } from "@/components/ui/date-picker";
 import { ApiError, studioApi, uploadToSignedUrl } from "@/lib/studio/api";
-import { formatDate, formatMoney, fromLocalInput, toLocalInput } from "@/lib/studio/labels";
+import { formatMoney, fromLocalInput, toLocalInput } from "@/lib/studio/labels";
 import type { AccessMode, CoursePayload } from "@/lib/studio/types";
 import { FileDrop } from "../curriculum/FileDrop";
 import { useCourseEditor } from "./CourseEditorContext";
@@ -164,20 +165,22 @@ function PriceAndAccess({ blocked }: { blocked: boolean }) {
           />
         </div>
         {v.access_mode === "SCHEDULED" && (
-          <div className="mt-5 grid gap-4 sm:grid-cols-2">
-            <Field label="Opens" htmlFor={fid("start")} required error={errors.start}>
-              <Input id={fid("start")} type="datetime-local" value={v.start} disabled={blocked} invalid={!!errors.start} onChange={(e) => draft.set("start", e.target.value)} />
-            </Field>
-            <Field
-              label="Closes"
-              htmlFor={fid("end")}
-              required
-              error={errors.end}
-              hint={!errors.end && v.start && v.end ? `${formatDate(fromLocalInput(v.start))} – ${formatDate(fromLocalInput(v.end))}` : undefined}
-            >
-              <Input id={fid("end")} type="datetime-local" value={v.end} disabled={blocked} invalid={!!errors.end} onChange={(e) => draft.set("end", e.target.value)} />
-            </Field>
-          </div>
+          <Field label="Access window" htmlFor={fid("start")} required error={errors.start ?? errors.end} className="mt-5">
+            <DateRangePicker
+              id={fid("start")}
+              start={v.start}
+              end={v.end}
+              onChange={({ start, end }) => {
+                draft.set("start", start);
+                draft.set("end", end);
+              }}
+              startLabel="Opens"
+              endLabel="Closes"
+              title="Course access window"
+              disabled={blocked}
+              invalid={errors.start ? "start" : errors.end ? "end" : false}
+            />
+          </Field>
         )}
       </Card>
 

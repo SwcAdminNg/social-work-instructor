@@ -1,8 +1,9 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { CalendarClock, FileText, Flag, Infinity as InfinityIcon, PenLine, Save, Settings2, Timer, Undo2 } from "lucide-react";
+import { FileText, Flag, Infinity as InfinityIcon, PenLine, Save, Settings2, Timer, Undo2 } from "lucide-react";
 import { Badge, Button, Card, CardHeader, Divider, Field, Input, Meta, Segmented, Switch, Textarea, cn } from "@/components/ui/primitives";
+import { DatePicker } from "@/components/ui/date-picker";
 import { useCourseEditor } from "@/components/studio/editor/CourseEditorContext";
 import { studioApi } from "@/lib/studio/api";
 import { formatDateTime, fromLocalInput, toLocalInput } from "@/lib/studio/labels";
@@ -311,20 +312,15 @@ export function AssessmentSettings({ item, sectionId }: { item: Item; sectionId:
           htmlFor="due-date"
           hint="Shown to learners as a target. Leave empty for no deadline."
         >
-          <div className="flex items-center gap-2">
-            <Input
-              id="due-date"
-              type="datetime-local"
-              value={form.due}
-              onChange={(e) => set("due", e.target.value)}
-              leading={<CalendarClock className="h-4 w-4" />}
-            />
-            {form.due && (
-              <Button variant="ghost" size="sm" onClick={() => set("due", "")}>
-                Clear
-              </Button>
-            )}
-          </div>
+          <DatePicker
+            id="due-date"
+            value={form.due}
+            onChange={(value) => set("due", value)}
+            clearable
+            defaultTime={{ hour: 23, minute: 59 }}
+            placeholder="No due date"
+            title="Due date"
+          />
         </Field>
 
         <div

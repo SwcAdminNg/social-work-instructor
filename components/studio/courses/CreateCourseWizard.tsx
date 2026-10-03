@@ -48,6 +48,7 @@ import {
   Textarea,
   cn,
 } from "@/components/ui/primitives";
+import { DateRangePicker } from "@/components/ui/date-picker";
 import { useAccess } from "@/components/studio/AccessContext";
 import { ApiError, studioApi } from "@/lib/studio/api";
 import { CATEGORY_LABELS, LEVEL_LABELS, formatDateTime, formatMoney, fromLocalInput } from "@/lib/studio/labels";
@@ -683,27 +684,28 @@ function PricingStep({ form, errors, set }: StepProps) {
       </Field>
 
       {form.access_mode === "SCHEDULED" && (
-        <div className="grid animate-fade-in gap-4 sm:grid-cols-2">
-          <Field label="Access opens" required htmlFor="access-start" error={errors.access_start_date}>
-            <Input
-              id="access-start"
-              type="datetime-local"
-              value={form.access_start_date}
-              invalid={!!errors.access_start_date}
-              onChange={(e) => set("access_start_date", e.target.value)}
-            />
-          </Field>
-          <Field label="Access closes" required htmlFor="access-end" error={errors.access_end_date}>
-            <Input
-              id="access-end"
-              type="datetime-local"
-              value={form.access_end_date}
-              min={form.access_start_date || undefined}
-              invalid={!!errors.access_end_date}
-              onChange={(e) => set("access_end_date", e.target.value)}
-            />
-          </Field>
-        </div>
+        <Field
+          label="Access window"
+          required
+          htmlFor="access-start"
+          error={errors.access_start_date ?? errors.access_end_date}
+          className="animate-fade-in"
+        >
+          <DateRangePicker
+            id="access-start"
+            start={form.access_start_date}
+            end={form.access_end_date}
+            onChange={({ start, end }) => {
+              set("access_start_date", start);
+              set("access_end_date", end);
+            }}
+            min={new Date()}
+            startLabel="Opens"
+            endLabel="Closes"
+            title="When can learners access this course?"
+            invalid={errors.access_start_date ? "start" : errors.access_end_date ? "end" : false}
+          />
+        </Field>
       )}
 
       <div className="rounded-xl border border-slate-200 p-4 dark:border-ink-line">
