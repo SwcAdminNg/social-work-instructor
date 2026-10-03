@@ -12,7 +12,13 @@ import {
   WifiOff,
 } from "lucide-react";
 import { toast } from "sonner";
+import { useQueryClient } from "@tanstack/react-query";
 import { getWsBaseUrl } from "@/lib/wsUrl";
+import { qk } from "@/lib/studio/queryKeys";
+
+// Governance and marking events change what studio screens show (stepper,
+// inbox counts, editor lock), so they refresh studio data as they arrive.
+const STUDIO_EVENT_PREFIXES = ["REVIEW_", "REVISION_", "MARKS_"];
 
 type NotificationItem = {
   id: string;
@@ -109,6 +115,7 @@ function mergeNewest(
 
 export function NotificationCenter() {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const { data: session } = useSession();
   const accessToken = (session as AppSession | null)?.accessToken;
   const [open, setOpen] = useState(false);
@@ -289,6 +296,13 @@ export function NotificationCenter() {
 
           setItems((current) => mergeNewest(current, [notification]));
           setUnreadCount((count) => count + 1);
+          if (notification.type === "ROLE_CHANGED") {
+            // Re-runs the dashboard layout, which re-reads /users/me (access).
+            router.refresh();
+          }
+          if (STUDIO_EVENT_PREFIXES.some((prefix) => notification.type.startsWith(prefix))) {
+            queryClient.invalidateQueries({ queryKey: qk.all });
+          }
           toast(notification.title, {
             description: notification.body || undefined,
             action: notification.link
@@ -323,7 +337,7 @@ export function NotificationCenter() {
       if (reconnectTimeoutRef.current) clearTimeout(reconnectTimeoutRef.current);
       wsRef.current?.close();
     };
-  }, [accessToken, reconcile]);
+  }, [accessToken, queryClient, reconcile, router]);
 
   const markRead = useCallback(async (notification: NotificationItem) => {
     if (notification.is_read) return notification;

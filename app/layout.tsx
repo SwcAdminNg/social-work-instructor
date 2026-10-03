@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Roboto } from "next/font/google";
+import { Plus_Jakarta_Sans, Roboto } from "next/font/google";
 import "./globals.css";
 import ThemeProvider from "@/components/generic/ThemeProvider";
 import ThemeToggle from "@/components/generic/ThemeToggle";
@@ -11,6 +11,12 @@ import { Toaster } from "sonner";
 const roboto = Roboto({
   variable: "--font-roboto",
   weight: ["400", "500", "700"],
+  subsets: ["latin"],
+});
+
+const jakarta = Plus_Jakarta_Sans({
+  variable: "--font-jakarta",
+  weight: ["500", "600", "700", "800"],
   subsets: ["latin"],
 });
 
@@ -28,7 +34,7 @@ export default async function RootLayout({
 
   return (
     <html lang="en" className="scroll-smooth" suppressHydrationWarning data-scroll-behavior="smooth">
-      <body className={`${roboto.className} antialiased`}>
+      <body className={`${roboto.className} ${roboto.variable} ${jakarta.variable} antialiased`}>
         <ThemeProvider>
           <QueryProvider>
             <SessionMonitor session={session}>

@@ -7,6 +7,7 @@ import type { UserAccess } from "@/components/dashboard/instructor/types";
 import { SidebarProvider, useSidebar } from "./SidebarContext";
 import { Sidebar } from "./Sidebar";
 import { DashboardHeader } from "./DashboardHeader";
+import { AccessProvider } from "@/components/studio/AccessContext";
 
 function ProfilePhotoBanner() {
   return (
@@ -78,13 +79,15 @@ export function DashboardShell({
   access?: UserAccess | null;
 }) {
   return (
-    <SidebarProvider>
-      <div className="min-h-screen bg-[#f7f7fb] dark:bg-[#0b0f1a]">
-        <Sidebar access={access} />
-        <Content userHasProfilePicture={userHasProfilePicture} access={access}>
-          {children}
-        </Content>
-      </div>
-    </SidebarProvider>
+    <AccessProvider access={access ?? null}>
+      <SidebarProvider>
+        <div className="min-h-screen bg-[#f7f7fb] dark:bg-[#0b0f1a]">
+          <Sidebar access={access} />
+          <Content userHasProfilePicture={userHasProfilePicture} access={access}>
+            {children}
+          </Content>
+        </div>
+      </SidebarProvider>
+    </AccessProvider>
   );
 }

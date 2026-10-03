@@ -7,6 +7,9 @@ function endpointFromRequest(request: Request, path: string[]) {
 }
 
 async function readBody(request: Request) {
+  if (request.headers.get("content-type")?.includes("multipart/form-data")) {
+    return request.formData();
+  }
   const text = await request.text();
   if (!text) return undefined;
 
