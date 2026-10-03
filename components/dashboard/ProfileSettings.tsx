@@ -16,6 +16,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useSession } from "next-auth/react";
 import type { UserAccess } from "@/components/dashboard/instructor/types";
 import { InstructorDocumentsSettings } from "./InstructorDocumentsSettings";
+import { Select } from "@/components/ui/select";
 
 type ProfileUser = {
   first_name?: string | null;
@@ -405,21 +406,21 @@ export function ProfileSettings() {
                 />
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+                <label htmlFor="profile-gender" className="text-sm font-semibold text-gray-700 dark:text-gray-300">
                   Gender
                 </label>
-                <select
+                <Select
+                  id="profile-gender"
                   value={gender}
-                  onChange={(e) => setGender(e.target.value)}
-                  className="w-full rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 px-4 py-3 text-sm transition-all focus:bg-white dark:focus:bg-gray-800 focus:border-[#2D6A4F] focus:ring-2 focus:ring-[#2D6A4F]/20 outline-none appearance-none"
-                >
-                  <option value="" disabled>
-                    Select Gender
-                  </option>
-                  <option value="MALE">Male</option>
-                  <option value="FEMALE">Female</option>
-                  <option value="OTHER">Other</option>
-                </select>
+                  onChange={setGender}
+                  placeholder="Select gender"
+                  title="Gender"
+                  options={[
+                    { value: "MALE", label: "Male" },
+                    { value: "FEMALE", label: "Female" },
+                    { value: "OTHER", label: "Other" },
+                  ]}
+                />
               </div>
             </div>
 

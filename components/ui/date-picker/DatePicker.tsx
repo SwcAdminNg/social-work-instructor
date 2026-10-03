@@ -3,7 +3,8 @@
 import { useState } from "react";
 import * as RadixDialog from "@radix-ui/react-dialog";
 import { ArrowRight, CalendarDays, CalendarRange, Clock, X } from "lucide-react";
-import { Button, Select, cn } from "../primitives";
+import { Button, cn } from "../primitives";
+import { Select } from "../select";
 import { Calendar } from "./Calendar";
 import {
   addDays,
@@ -118,26 +119,26 @@ function TimeField({
         {label}
       </p>
       <div className="flex min-w-0 items-center gap-1.5">
-        <Select aria-label={`${label}: hour`} value={h12} onChange={(e) => setHour12(Number(e.target.value))} className="h-9 min-w-0 flex-1 pr-7 tabular-nums">
-          {HOURS.map((h) => (
-            <option key={h} value={h}>
-              {h}
-            </option>
-          ))}
-        </Select>
+        <Select
+          aria-label={`${label}: hour`}
+          title={`${label}: hour`}
+          value={String(h12)}
+          onChange={(v) => setHour12(Number(v))}
+          size="sm"
+          className="min-w-0 flex-1 tabular-nums"
+          options={HOURS.map((h) => ({ value: String(h), label: String(h) }))}
+        />
         <span className="font-bold text-slate-400">:</span>
         <Select
           aria-label={`${label}: minutes`}
-          value={value.minute}
-          onChange={(e) => onChange({ ...value, minute: Number(e.target.value) })}
-          className="h-9 min-w-0 flex-1 pr-7 tabular-nums"
-        >
-          {minutes.map((m) => (
-            <option key={m} value={m}>
-              {String(m).padStart(2, "0")}
-            </option>
-          ))}
-        </Select>
+          title={`${label}: minutes`}
+          value={String(value.minute)}
+          onChange={(v) => onChange({ ...value, minute: Number(v) })}
+          size="sm"
+          searchable={false}
+          className="min-w-0 flex-1 tabular-nums"
+          options={minutes.map((m) => ({ value: String(m), label: String(m).padStart(2, "0") }))}
+        />
         <div className="inline-flex flex-shrink-0 rounded-lg bg-slate-100 p-0.5 dark:bg-white/5" role="group" aria-label={`${label}: AM or PM`}>
           {(["AM", "PM"] as const).map((p) => {
             const active = (p === "PM") === pm;

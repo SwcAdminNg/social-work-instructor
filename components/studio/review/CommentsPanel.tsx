@@ -4,7 +4,8 @@ import { useMemo, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { CheckCircle2, CornerDownRight, MapPin, MessageSquare, MessagesSquare, RefreshCw, Reply, Send } from "lucide-react";
 import { toast } from "sonner";
-import { Avatar, Badge, Button, Callout, Card, CardHeader, EmptyState, Select, Skeleton, Textarea, cn } from "@/components/ui/primitives";
+import { Avatar, Badge, Button, Callout, Card, CardHeader, EmptyState, Skeleton, Textarea, cn } from "@/components/ui/primitives";
+import { Select } from "@/components/ui/select";
 import { studioApi } from "@/lib/studio/api";
 import { formatDateTime, relativeTime } from "@/lib/studio/labels";
 import { qk } from "@/lib/studio/queryKeys";
@@ -304,18 +305,26 @@ function Composer({
       {error && <p className="px-1 pb-1 text-xs font-medium text-rose-600 dark:text-rose-300">{error}</p>}
       <div className="mt-2 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         {!parentId && anchors.length > 0 ? (
-          <Select aria-label="Pin this comment to" value={anchor} onChange={(e) => setAnchor(e.target.value)} className="h-8 text-xs sm:max-w-xs">
-            <option value="">Not pinned — general comment</option>
-            {groups.map(([group, list]) => (
-              <optgroup key={group} label={group}>
-                {list.map((a) => (
-                  <option key={`${a.type}:${a.id}`} value={`${a.type}:${a.id}`}>
-                    {a.label}
-                  </option>
-                ))}
-              </optgroup>
-            ))}
-          </Select>
+          <Select
+            aria-label="Pin this comment to"
+            title="Pin this comment to"
+            value={anchor}
+            onChange={setAnchor}
+            size="sm"
+            icon={MapPin}
+            clearable
+            menuWidth="auto"
+            searchable
+            searchPlaceholder="Find a module, lesson or question…"
+            className="sm:max-w-xs"
+            options={[
+              { value: "", label: "Not pinned — general comment", icon: MessageSquare },
+              ...groups.map(([group, list]) => ({
+                label: group,
+                options: list.map((a) => ({ value: `${a.type}:${a.id}`, label: a.label })),
+              })),
+            ]}
+          />
         ) : (
           <span className="hidden text-xs text-slate-400 sm:block">Ctrl + Enter to send</span>
         )}

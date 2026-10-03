@@ -611,24 +611,7 @@ export const Textarea = forwardRef<HTMLTextAreaElement, React.TextareaHTMLAttrib
   },
 );
 
-export const Select = forwardRef<HTMLSelectElement, React.SelectHTMLAttributes<HTMLSelectElement>>(function Select(
-  { className, children, ...rest },
-  ref,
-) {
-  return (
-    <select
-      ref={ref}
-      className={cn(
-        CONTROL,
-        "h-10 cursor-pointer appearance-none bg-[url(\"data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%2394a3b8' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e\")] bg-[length:1.25rem] bg-[right_0.6rem_center] bg-no-repeat pl-3 pr-9",
-        className,
-      )}
-      {...rest}
-    >
-      {children}
-    </select>
-  );
-});
+// Dropdown selects live in "@/components/ui/select" (shared with the admin app).
 
 export function Switch({
   checked,

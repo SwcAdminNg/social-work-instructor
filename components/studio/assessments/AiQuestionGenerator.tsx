@@ -23,7 +23,8 @@ import {
   X,
 } from "lucide-react";
 import { toast } from "sonner";
-import { Badge, Button, Callout, Field, Input, ProgressBar, Segmented, Select, Switch, Textarea, cn } from "@/components/ui/primitives";
+import { Badge, Button, Callout, Field, Input, ProgressBar, Segmented, Switch, Textarea, cn } from "@/components/ui/primitives";
+import { Select } from "@/components/ui/select";
 import { Dialog } from "@/components/ui/overlays";
 import { useCourseEditor } from "@/components/studio/editor/CourseEditorContext";
 import { studioApi } from "@/lib/studio/api";
@@ -423,14 +424,19 @@ export function AiQuestionGenerator({
             {advanced && (
               <div className="mt-3 grid animate-pop-in gap-4 sm:grid-cols-2">
                 <Field label="Provider" htmlFor="ai-provider" hint="Switch if one is slow or unavailable.">
-                  <Select id="ai-provider" value={provider} onChange={(e) => setProvider(e.target.value as AiProvider)}>
-                    {PROVIDERS.map((p) => (
-                      <option key={p.value} value={p.value}>
-                        {p.label}
-                        {p.value === "GEMINI" ? " (default)" : ""}
-                      </option>
-                    ))}
-                  </Select>
+                  <Select
+                    id="ai-provider"
+                    value={provider}
+                    onChange={(value) => setProvider(value as AiProvider)}
+                    title="AI provider"
+                    icon={Sparkles}
+                    options={PROVIDERS.map((p) => ({
+                      value: p.value,
+                      label: p.value === "GEMINI" ? `${p.label} (default)` : p.label,
+                      description: `Model: ${p.defaultModel}`,
+                      icon: Sparkles,
+                    }))}
+                  />
                 </Field>
                 <Field label="Model" optional htmlFor="ai-model" hint="Leave blank unless an administrator gave you one.">
                   <Input

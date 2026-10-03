@@ -19,7 +19,8 @@ import {
   Settings2,
   type LucideIcon,
 } from "lucide-react";
-import { Badge, Button, Callout, Card, EmptyState, Input, Segmented, Select, Skeleton, cn } from "@/components/ui/primitives";
+import { Badge, Button, Callout, Card, EmptyState, Input, Segmented, Skeleton, cn } from "@/components/ui/primitives";
+import { Select } from "@/components/ui/select";
 import { DiffOpBadge, RiskBadge } from "@/components/studio/StatusBadges";
 import { DIFF_OP, RISK } from "@/lib/studio/labels";
 import type { DiffChange, DiffOp, ItemType, Risk, RevisionDiff } from "@/lib/studio/types";
@@ -156,14 +157,17 @@ export function DiffView({ revisionId, diff: given, hideSummary, className }: Di
                 leading={<Search className="h-4 w-4" />}
                 className="h-9 sm:w-56"
               />
-              <Select aria-label="Filter by risk" value={risk} onChange={(e) => setRisk(e.target.value as RiskFilter)} className="h-9 w-36">
-                <option value="ALL">Any risk</option>
-                {(["HIGH", "MEDIUM", "LOW"] as Risk[]).map((r) => (
-                  <option key={r} value={r}>
-                    {RISK[r].label}
-                  </option>
-                ))}
-              </Select>
+              <Select
+                aria-label="Filter by risk"
+                value={risk}
+                onChange={(value) => setRisk(value as RiskFilter)}
+                size="sm"
+                className="w-40"
+                options={[
+                  { value: "ALL", label: "Any risk", tone: "neutral" },
+                  ...(["HIGH", "MEDIUM", "LOW"] as Risk[]).map((r) => ({ value: r, label: RISK[r].label, tone: RISK[r].tone })),
+                ]}
+              />
             </div>
           </div>
 

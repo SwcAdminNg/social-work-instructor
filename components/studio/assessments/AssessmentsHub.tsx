@@ -26,10 +26,11 @@ import {
   Input,
   PageHeader,
   Segmented,
-  Select,
   StatCard,
   cn,
 } from "@/components/ui/primitives";
+import { Select } from "@/components/ui/select";
+import { BookOpen } from "lucide-react";
 import { useAccess } from "@/components/studio/AccessContext";
 import { LifecycleBadge } from "@/components/studio/StatusBadges";
 import { ASSESSMENT_TYPE_LABELS, formatDate, relativeTime } from "@/lib/studio/labels";
@@ -258,14 +259,19 @@ export function AssessmentsHub({
                       <Flag className="h-3.5 w-3.5" />
                       Module gates
                     </button>
-                    <Select aria-label="Filter by course" value={courseId} onChange={(e) => setCourseId(e.target.value)} className="sm:w-56">
-                      <option value="">All courses</option>
-                      {coursesWithAssessments.map(([id, title]) => (
-                        <option key={id} value={id}>
-                          {title}
-                        </option>
-                      ))}
-                    </Select>
+                    <Select
+                      aria-label="Filter by course"
+                      value={courseId}
+                      onChange={setCourseId}
+                      className="sm:w-56"
+                      icon={BookOpen}
+                      searchPlaceholder="Search courses…"
+                      menuWidth="auto"
+                      options={[
+                        { value: "", label: "All courses" },
+                        ...coursesWithAssessments.map(([id, title]) => ({ value: id, label: title || "Untitled course" })),
+                      ]}
+                    />
                     <div className="sm:w-64">
                       <Input
                         aria-label="Search assessments"

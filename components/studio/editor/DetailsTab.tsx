@@ -3,7 +3,9 @@
 import { useId, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { BookOpenText, Check, ClipboardCheck, Info, Lock, Package, Target } from "lucide-react";
-import { Callout, Card, CardHeader, Field, Input, Select, Textarea } from "@/components/ui/primitives";
+import { Callout, Card, CardHeader, Field, Input, Textarea } from "@/components/ui/primitives";
+import { Select } from "@/components/ui/select";
+import { CATEGORY_ICONS } from "../courses/CourseCover";
 import { ApiError, studioApi } from "@/lib/studio/api";
 import { CATEGORY_LABELS, LEVEL_LABELS } from "@/lib/studio/labels";
 import type { CourseCategory, CourseLevel, CoursePayload } from "@/lib/studio/types";
@@ -133,24 +135,33 @@ export function DetailsTab() {
           </Field>
           <div className="grid gap-5 sm:grid-cols-2">
             <Field label="Level" htmlFor={fid("level")} error={errors.level}>
-              <Select id={fid("level")} value={v.level} disabled={readOnly} onChange={(e) => draft.set("level", e.target.value as CourseLevel)}>
-                {!v.level && <option value="">Choose a level</option>}
-                {(Object.keys(LEVEL_LABELS) as CourseLevel[]).map((k) => (
-                  <option key={k} value={k}>
-                    {LEVEL_LABELS[k]}
-                  </option>
-                ))}
-              </Select>
+              <Select
+                id={fid("level")}
+                value={v.level}
+                disabled={readOnly}
+                invalid={!!errors.level}
+                onChange={(value) => draft.set("level", value as CourseLevel)}
+                placeholder="Choose a level"
+                title="Course level"
+                options={[
+                  { value: "BEGINNER", label: LEVEL_LABELS.BEGINNER, description: "No prior knowledge needed" },
+                  { value: "INTERMEDIATE", label: LEVEL_LABELS.INTERMEDIATE, description: "Builds on the fundamentals" },
+                  { value: "ADVANCED", label: LEVEL_LABELS.ADVANCED, description: "For experienced practitioners" },
+                ]}
+              />
             </Field>
             <Field label="Category" htmlFor={fid("cat")} error={errors.category}>
-              <Select id={fid("cat")} value={v.category} disabled={readOnly} onChange={(e) => draft.set("category", e.target.value as CourseCategory)}>
-                {!v.category && <option value="">Choose a category</option>}
-                {(Object.keys(CATEGORY_LABELS) as CourseCategory[]).map((k) => (
-                  <option key={k} value={k}>
-                    {CATEGORY_LABELS[k]}
-                  </option>
-                ))}
-              </Select>
+              <Select
+                id={fid("cat")}
+                value={v.category}
+                disabled={readOnly}
+                invalid={!!errors.category}
+                onChange={(value) => draft.set("category", value as CourseCategory)}
+                placeholder="Choose a category"
+                title="Course category"
+                searchPlaceholder="Search categories…"
+                options={(Object.keys(CATEGORY_LABELS) as CourseCategory[]).map((k) => ({ value: k, label: CATEGORY_LABELS[k], icon: CATEGORY_ICONS[k] }))}
+              />
             </Field>
           </div>
           <Field label="Prerequisites" htmlFor={fid("pre")} optional error={errors.prerequisite} hint="Knowledge or experience learners should have before starting.">

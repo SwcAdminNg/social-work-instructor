@@ -22,6 +22,7 @@ import {
   Search,
   TimerReset,
 } from "lucide-react";
+import { Select } from "@/components/ui/select";
 
 export type AssessmentTab =
   | "upcoming"
@@ -430,20 +431,18 @@ export default function AssessmentsList({
                     </button>
                   </div>
 
-                  <label className="flex items-center justify-between gap-2 text-sm font-medium text-slate-500 dark:text-slate-400 sm:justify-start">
-                    Rows per page
-                    <select
-                      value={pageSize}
-                      onChange={(event) =>
-                        updateParam({ rows: event.target.value, page: "1" })
-                      }
-                      className="h-9 rounded-md border border-[#e1deec] bg-white px-3 text-sm font-extrabold text-slate-800 outline-none dark:border-[#30364d] dark:bg-[#0f1726] dark:text-slate-100"
-                    >
-                      <option value="10">10</option>
-                      <option value="20">20</option>
-                      <option value="50">50</option>
-                    </select>
-                  </label>
+                  <div className="flex items-center justify-between gap-2 text-sm font-medium text-slate-500 dark:text-slate-400 sm:justify-start">
+                    <span id="rows-per-page">Rows per page</span>
+                    <Select
+                      aria-labelledby="rows-per-page"
+                      title="Rows per page"
+                      value={String(pageSize)}
+                      onChange={(value) => updateParam({ rows: value, page: "1" })}
+                      size="sm"
+                      className="w-20"
+                      options={["10", "20", "50"].map((n) => ({ value: n, label: n }))}
+                    />
+                  </div>
                 </div>
               </div>
             </>

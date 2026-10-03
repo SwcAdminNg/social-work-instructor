@@ -25,9 +25,11 @@ import {
   Input,
   PageHeader,
   Segmented,
-  Select,
   cn,
 } from "@/components/ui/primitives";
+import { Select } from "@/components/ui/select";
+import { ArrowDownAZ, BarChart3, Clock3, Shapes } from "lucide-react";
+import { CATEGORY_ICONS } from "./CourseCover";
 import { ConfirmDialog } from "@/components/ui/overlays";
 import { useAccess } from "@/components/studio/AccessContext";
 import { ApiError, studioApi } from "@/lib/studio/api";
@@ -289,26 +291,36 @@ export function CourseLibrary({ initialCourses, initialDrafts, initialReturned }
             )}
           </div>
           <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:items-center">
-            <Select aria-label="Filter by category" value={category} onChange={(e) => setCategory(e.target.value as CourseCategory | "")} className="sm:w-48">
-              <option value="">All categories</option>
-              {Object.entries(CATEGORY_LABELS).map(([k, l]) => (
-                <option key={k} value={k}>
-                  {l}
-                </option>
-              ))}
-            </Select>
-            <Select aria-label="Filter by level" value={level} onChange={(e) => setLevel(e.target.value as CourseLevel | "")} className="sm:w-36">
-              <option value="">All levels</option>
-              {Object.entries(LEVEL_LABELS).map(([k, l]) => (
-                <option key={k} value={k}>
-                  {l}
-                </option>
-              ))}
-            </Select>
-            <Select aria-label="Sort courses" value={sort} onChange={(e) => setSort(e.target.value as SortKey)} className="sm:w-44">
-              <option value="recent">Recently created</option>
-              <option value="title">Title A–Z</option>
-            </Select>
+            <Select
+              aria-label="Filter by category"
+              value={category}
+              onChange={(value) => setCategory(value as CourseCategory | "")}
+              className="sm:w-52"
+              icon={Shapes}
+              menuWidth="auto"
+              options={[
+                { value: "", label: "All categories", icon: Shapes },
+                ...(Object.keys(CATEGORY_LABELS) as CourseCategory[]).map((k) => ({ value: k, label: CATEGORY_LABELS[k], icon: CATEGORY_ICONS[k] })),
+              ]}
+            />
+            <Select
+              aria-label="Filter by level"
+              value={level}
+              onChange={(value) => setLevel(value as CourseLevel | "")}
+              className="sm:w-40"
+              icon={BarChart3}
+              options={[{ value: "", label: "All levels" }, ...(Object.keys(LEVEL_LABELS) as CourseLevel[]).map((k) => ({ value: k, label: LEVEL_LABELS[k] }))]}
+            />
+            <Select
+              aria-label="Sort courses"
+              value={sort}
+              onChange={(value) => setSort(value as SortKey)}
+              className="sm:w-48"
+              options={[
+                { value: "recent", label: "Recently created", icon: Clock3 },
+                { value: "title", label: "Title A–Z", icon: ArrowDownAZ },
+              ]}
+            />
             <Segmented
               size="md"
               value={view}
