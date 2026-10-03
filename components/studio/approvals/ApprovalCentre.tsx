@@ -16,6 +16,8 @@ import {
   RefreshCw,
   Rocket,
   Search,
+  Send,
+  UserRoundSearch,
   XCircle,
   type LucideIcon,
 } from "lucide-react";
@@ -26,11 +28,18 @@ import { APPROVAL_ITEM_TYPES, DECISION, formatDateTime, humanize, relativeTime, 
 import { qk } from "@/lib/studio/queryKeys";
 import type { ApprovalCounts, ApprovalRow, ApprovalView, Decision, PaginatedMeta } from "@/lib/studio/types";
 import { errorMessage } from "@/components/studio/review/utils";
+import { useSubmittedReviews, type SubmittedRow } from "./useSubmittedReviews";
+
+/** API inbox views plus "submitted", which the app assembles itself (see useSubmittedReviews). */
+export type InboxView = ApprovalView | "submitted";
 
 export type ApprovalCentreInit = {
-  view: ApprovalView;
+  view: InboxView;
   reviewerMode: boolean;
   canPublish: boolean;
+  /** Can send work for review — shows the "Submitted" tab. */
+  canSubmit: boolean;
+  userId?: string | null;
   counts: ApprovalCounts | null;
   rows: ApprovalRow[] | null;
   meta?: PaginatedMeta;
@@ -40,7 +49,7 @@ type Kind = "ALL" | "COURSE_REVISION" | "ESSAY_MARK";
 
 const PAGE_SIZE = 30;
 
-const EMPTY: Record<ApprovalView, { icon: LucideIcon; title: string; description: string }> = {
+const EMPTY: Record<InboxView, { icon: LucideIcon; title: string; description: string }> = {
   awaiting_me: {
     icon: CheckCircle2,
     title: "You're all caught up",
@@ -57,6 +66,11 @@ const EMPTY: Record<ApprovalView, { icon: LucideIcon; title: string; description
     title: "Nothing returned to you",
     description: "If a reviewer asks for changes on your work, it shows up here with their comments.",
   },
+  submitted: {
+    icon: Send,
+    title: "Nothing in review",
+    description: "Courses you submit for review appear here while reviewers work through them — with the stage they're at, who has them and when it's due.",
+  },
   my_drafts: {
     icon: FilePenLine,
     title: "No open drafts",
@@ -67,8 +81,11 @@ const EMPTY: Record<ApprovalView, { icon: LucideIcon; title: string; description
 };
 
 export function ApprovalCentre({ init }: { init: ApprovalCentreInit }) {
-  const { reviewerMode, canPublish } = init;
-  const [view, setView] = useState<ApprovalView>(init.view);
+  const { reviewerMode, canPublish, canSubmit } = init;
+  const [view, setView] = useState<InboxView>(init.view);
+  const isSubmitted = view === "submitted";
+  // Loaded up front (not only on the tab) so its count badge is accurate.
+  const submitted = useSubmittedReviews(init.userId, canSubmit);
   const [kind, setKind] = useState<Kind>("ALL");
   const [search, setSearch] = useState("");
 
@@ -80,34 +97,41 @@ export function ApprovalCentre({ init }: { init: ApprovalCentreInit }) {
   });
 
   const seedInitial = view === init.view && kind === "ALL" && init.rows !== null;
+  const apiView: ApprovalView = isSubmitted ? "my_drafts" : view;
   const list = useInfiniteQuery({
-    queryKey: qk.approval(view, kind === "ALL" ? undefined : kind),
+    queryKey: qk.approval(apiView, kind === "ALL" ? undefined : kind),
     queryFn: ({ pageParam }) =>
-      studioApi.approvalCentre({ view, kind: kind === "ALL" ? undefined : kind, page: pageParam, page_size: PAGE_SIZE }),
+      studioApi.approvalCentre({ view: apiView, kind: kind === "ALL" ? undefined : kind, page: pageParam, page_size: PAGE_SIZE }),
+    enabled: !isSubmitted,
     initialPageParam: 1,
     getNextPageParam: (last, _all, lastParam) => (last.meta?.has_next ? lastParam + 1 : undefined),
     initialData: seedInitial ? { pages: [{ items: init.rows ?? [], meta: init.meta }], pageParams: [1] } : undefined,
     staleTime: 15_000,
   });
 
-  const rows = useMemo(() => {
-    const all = list.data?.pages.flatMap((p) => p.items) ?? [];
+  const rows = useMemo<SubmittedRow[]>(() => {
+    const all: SubmittedRow[] = isSubmitted
+      ? kind === "ESSAY_MARK"
+        ? []
+        : (submitted.data ?? [])
+      : (list.data?.pages.flatMap((p) => p.items) ?? []);
     const q = search.trim().toLowerCase();
     return q ? all.filter((r) => [r.item_title, r.course_title].some((t) => t?.toLowerCase().includes(q))) : all;
-  }, [list.data, search]);
+  }, [isSubmitted, kind, submitted.data, list.data, search]);
 
   const c = counts.data ?? {};
-  const tabs: TabDef<ApprovalView>[] = [
+  const tabs: TabDef<InboxView>[] = [
     { key: "awaiting_me", label: "Awaiting me", icon: Inbox, count: c.awaiting_me, tone: "brand", hidden: !reviewerMode },
     { key: "overdue", label: "Overdue", icon: AlarmClock, count: c.overdue, tone: "danger", hidden: !reviewerMode },
     { key: "ready_to_publish", label: "Ready to publish", icon: Rocket, count: c.ready_to_publish, tone: "success", hidden: !canPublish },
     { key: "returned_to_me", label: "Returned to me", icon: CornerUpLeft, count: c.returned_to_me, tone: "warning" },
+    { key: "submitted", label: "Submitted", icon: Send, count: submitted.data?.length, tone: "info", hidden: !canSubmit },
     { key: "my_drafts", label: "My drafts", icon: FilePenLine },
     { key: "recently_approved", label: "Recently approved", icon: CheckCircle2 },
     { key: "recently_rejected", label: "Recently rejected", icon: XCircle },
   ];
 
-  function changeView(v: ApprovalView) {
+  function changeView(v: InboxView) {
     setView(v);
     setSearch("");
     try {
@@ -130,17 +154,18 @@ export function ApprovalCentre({ init }: { init: ApprovalCentreInit }) {
         title="Approval Centre"
         description={
           reviewerMode
-            ? "Everything waiting for your review, your drafts and recent decisions — in one place."
-            : "Your drafts, anything returned to you, and recent decisions on your work."
+            ? "Everything waiting for your review, your own submissions and drafts, and recent decisions — in one place."
+            : "Your drafts, what you've submitted for review, anything returned to you, and recent decisions on your work."
         }
         actions={
           <Button
             variant="outline"
             icon={RefreshCw}
-            loading={list.isRefetching || counts.isRefetching}
+            loading={list.isRefetching || counts.isRefetching || submitted.isRefetching}
             onClick={() => {
               void counts.refetch();
-              void list.refetch();
+              if (isSubmitted) void submitted.refetch();
+              else void list.refetch();
             }}
           >
             Refresh
@@ -187,7 +212,7 @@ export function ApprovalCentre({ init }: { init: ApprovalCentreInit }) {
         </div>
       </div>
 
-      {list.isPending ? (
+      {(isSubmitted ? submitted.isPending : list.isPending) ? (
         <Card padded={false} className="divide-y divide-slate-100 dark:divide-ink-line">
           {[0, 1, 2, 3, 4].map((i) => (
             <div key={i} className="flex items-center gap-4 px-5 py-4">
@@ -200,17 +225,17 @@ export function ApprovalCentre({ init }: { init: ApprovalCentreInit }) {
             </div>
           ))}
         </Card>
-      ) : list.isError ? (
+      ) : (isSubmitted ? submitted.isError : list.isError) ? (
         <Callout
           tone="danger"
           title="We couldn't load this inbox"
           actions={
-            <Button size="sm" variant="outline" icon={RefreshCw} onClick={() => list.refetch()}>
+            <Button size="sm" variant="outline" icon={RefreshCw} onClick={() => (isSubmitted ? submitted.refetch() : list.refetch())}>
               Retry
             </Button>
           }
         >
-          {errorMessage(list.error)}
+          {errorMessage(isSubmitted ? submitted.error : list.error)}
         </Callout>
       ) : rows.length === 0 ? (
         search.trim() ? (
@@ -221,7 +246,7 @@ export function ApprovalCentre({ init }: { init: ApprovalCentreInit }) {
             title={empty.title}
             description={empty.description}
             action={
-              view === "my_drafts" ? (
+              view === "my_drafts" || view === "submitted" ? (
                 <Link href="/dashboard/courses" className="text-sm font-semibold text-brand-700 hover:underline dark:text-brand-300">
                   Go to my courses →
                 </Link>
@@ -231,14 +256,20 @@ export function ApprovalCentre({ init }: { init: ApprovalCentreInit }) {
         )
       ) : (
         <>
+          {isSubmitted && (
+            <p className="-mb-2 flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400">
+              <UserRoundSearch className="h-3.5 w-3.5" />
+              {rows.length} of your submission{rows.length === 1 ? " is" : "s are"} with reviewers. Open one to follow its progress or withdraw it.
+            </p>
+          )}
           <Card padded={false} className="overflow-hidden">
             <ul className="divide-y divide-slate-100 dark:divide-ink-line">
               {rows.map((r) => (
-                <InboxRow key={`${r.kind}-${r.id}`} row={r} recent={recent} />
+                <InboxRow key={`${r.kind}-${r.id}`} row={r} recent={recent} submitted={isSubmitted} />
               ))}
             </ul>
           </Card>
-          {list.hasNextPage && !search.trim() && (
+          {!isSubmitted && list.hasNextPage && !search.trim() && (
             <Button variant="outline" className="self-center" loading={list.isFetchingNextPage} onClick={() => list.fetchNextPage()}>
               Load more
             </Button>
@@ -249,7 +280,7 @@ export function ApprovalCentre({ init }: { init: ApprovalCentreInit }) {
   );
 }
 
-function InboxRow({ row: r, recent }: { row: ApprovalRow; recent: boolean }) {
+function InboxRow({ row: r, recent, submitted }: { row: SubmittedRow; recent: boolean; submitted?: boolean }) {
   const isMark = r.kind === "ESSAY_MARK";
   const href = isMark ? `/dashboard/approval-centre/marks/${r.id}` : `/dashboard/approval-centre/revisions/${r.id}`;
   const Icon = isMark ? PenLine : BookOpen;
@@ -301,20 +332,52 @@ function InboxRow({ row: r, recent }: { row: ApprovalRow; recent: boolean }) {
           ) : (
             <RevisionStatusBadge status={r.status} size="xs" />
           )}
-          {r.current_stage && !recent && <Badge size="xs">{stageLabel(r.current_stage)}</Badge>}
+          {r.current_stage && !recent && (
+            <Badge size="xs">
+              {submitted && r.progress ? `Stage ${Math.min(r.progress.done + 1, r.progress.total)} of ${r.progress.total} · ` : ""}
+              {stageLabel(r.current_stage)}
+            </Badge>
+          )}
           <RiskBadge risk={r.risk} size="xs" />
           <VersionBadge label={r.version_label} size="xs" />
         </div>
 
         {/* People */}
         <div className="flex min-w-0 items-center gap-4 pl-[52px] text-xs text-slate-500 lg:pl-0 dark:text-slate-400">
-          {r.submitted_by?.name && (
+          {submitted ? (
+            <span className="flex min-w-0 flex-col gap-1">
+              <span className="truncate">
+                {r.reviewer?.name ? (
+                  <>
+                    With <span className="font-medium text-slate-700 dark:text-slate-200">{r.reviewer.name}</span>
+                  </>
+                ) : r.status === "READY_TO_PUBLISH" ? (
+                  "Waiting for an admin to publish"
+                ) : (
+                  "Waiting for a reviewer to pick it up"
+                )}
+              </span>
+              {r.progress && (
+                <span className="flex items-center gap-2">
+                  <span className="h-1 w-20 overflow-hidden rounded-full bg-slate-100 dark:bg-white/8">
+                    <span
+                      className="block h-full rounded-full bg-gradient-to-r from-brand-500 to-brand-400"
+                      style={{ width: `${(r.progress.done / r.progress.total) * 100}%` }}
+                    />
+                  </span>
+                  <span className="tabular-nums">
+                    {r.progress.done}/{r.progress.total} approved
+                  </span>
+                </span>
+              )}
+            </span>
+          ) : r.submitted_by?.name && (
             <span className="flex min-w-0 items-center gap-1.5" title="Submitted by">
               <Avatar name={r.submitted_by.name} size="xs" />
               <span className="truncate">{r.submitted_by.name}</span>
             </span>
           )}
-          {r.reviewer?.name && (
+          {!submitted && r.reviewer?.name && (
             <span className="min-w-0 truncate" title={recent ? "Decided by" : "Reviewer"}>
               {recent ? "by" : "→"} {r.reviewer.name}
             </span>
@@ -333,6 +396,10 @@ function InboxRow({ row: r, recent }: { row: ApprovalRow; recent: boolean }) {
             >
               {r.is_overdue ? <AlarmClock className="h-3.5 w-3.5" /> : <Clock3 className="h-3.5 w-3.5" />}
               {r.is_overdue ? `Overdue · ${relativeTime(r.due_at)}` : `Due ${relativeTime(r.due_at)}`}
+            </span>
+          ) : submitted && r.submitted_at ? (
+            <span className="whitespace-nowrap text-xs text-slate-500 dark:text-slate-400" title={formatDateTime(r.submitted_at)}>
+              Submitted {relativeTime(r.submitted_at)}
             </span>
           ) : (
             <span />

@@ -165,7 +165,7 @@ export function DashboardHome({ data }: { data: HomeData }) {
         hint: approved ? `${approved} approved, awaiting publish` : inReview ? "With reviewers now" : "Nothing submitted",
         icon: Clock3,
         tone: "info",
-        href: inbox ? "/dashboard/approval-centre" : "/dashboard/courses",
+        href: inbox ? "/dashboard/approval-centre?view=submitted" : "/dashboard/courses",
       });
     }
   }
