@@ -258,6 +258,7 @@ function GroupSectionCard({
             questions={questions}
             target={{ kind: "group", sectionId: section.id }}
             readOnly={readOnly}
+            drawCount={draw}
           />
         </div>
       )}

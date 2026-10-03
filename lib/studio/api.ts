@@ -43,12 +43,15 @@ export type FieldError = { loc?: (string | number)[]; msg?: string };
 export class ApiError extends Error {
   status: number;
   errors: FieldError[];
+  /** Set for requests that never got a response: "aborted" or "timeout". */
+  code?: string;
 
-  constructor(message: string, status: number, errors: FieldError[] = []) {
+  constructor(message: string, status: number, errors: FieldError[] = [], code?: string) {
     super(message);
     this.name = "ApiError";
     this.status = status;
     this.errors = errors;
+    this.code = code;
   }
 
   /** The course is locked: under review (withdraw first) or archived. */
@@ -75,18 +78,52 @@ function errorMessage(json: Envelope<unknown>, status: number) {
   return status === 401 ? "Your session has expired. Please sign in again." : "Something went wrong. Please try again.";
 }
 
+type RequestOptions = {
+  /** Cancels the request (e.g. a "Cancel" button). */
+  signal?: AbortSignal;
+  /** Client-side timeout in ms; rejects with status 0 / "timeout". */
+  timeoutMs?: number;
+};
+
+/** status 0 + code: the request never got an HTTP answer. */
+export const ABORTED = "aborted";
+export const TIMED_OUT = "timeout";
+
 async function request<T>(
   method: string,
   path: string,
   body?: unknown,
+  opts: RequestOptions = {},
 ): Promise<{ data: T; meta?: PaginatedMeta; message?: string }> {
   const isForm = body instanceof FormData;
-  const res = await fetch(`/api/proxy${path}`, {
-    method,
-    headers: body !== undefined && !isForm ? { "Content-Type": "application/json" } : undefined,
-    body: body === undefined ? undefined : isForm ? body : JSON.stringify(body),
-    cache: "no-store",
-  });
+  const controller = new AbortController();
+  let timedOut = false;
+  const timer = opts.timeoutMs
+    ? setTimeout(() => {
+        timedOut = true;
+        controller.abort();
+      }, opts.timeoutMs)
+    : undefined;
+  const onAbort = () => controller.abort();
+  opts.signal?.addEventListener("abort", onAbort);
+
+  let res: Response;
+  try {
+    res = await fetch(`/api/proxy${path}`, {
+      method,
+      headers: body !== undefined && !isForm ? { "Content-Type": "application/json" } : undefined,
+      body: body === undefined ? undefined : isForm ? body : JSON.stringify(body),
+      cache: "no-store",
+      signal: controller.signal,
+    });
+  } catch (err) {
+    if (timedOut) throw new ApiError("The request took too long and was stopped.", 0, [], TIMED_OUT);
+    if (controller.signal.aborted) throw new ApiError("Cancelled.", 0, [], ABORTED);
+    throw new ApiError((err as Error)?.message || "Network error. Check your connection.", 0);
+  } finally {
+    if (timer) clearTimeout(timer);
+    opts.signal?.removeEventListener("abort", onAbort);
+  }
   const json = (await res.json().catch(() => ({}))) as Envelope<T>;
   if (!res.ok || json.success === false) {
     throw new ApiError(errorMessage(json, res.status), res.status, json.errors ?? []);
@@ -95,7 +132,8 @@ async function request<T>(
 }
 
 const get = <T>(path: string) => request<T>("GET", path).then((r) => r.data);
-const post = <T>(path: string, body?: unknown) => request<T>("POST", path, body ?? {}).then((r) => r.data);
+const post = <T>(path: string, body?: unknown, opts?: RequestOptions) =>
+  request<T>("POST", path, body ?? {}, opts).then((r) => r.data);
 const patch = <T>(path: string, body?: unknown) => request<T>("PATCH", path, body ?? {}).then((r) => r.data);
 const del = <T = unknown>(path: string) => request<T>("DELETE", path).then((r) => r.data);
 
@@ -132,15 +170,21 @@ export async function uploadToSignedUrl(
   });
 }
 
+/** Client timeout for AI drafting calls (server gives the provider 60s). */
+export const AI_TIMEOUT_MS = 120_000;
+
+/** Largest document the AI endpoints accept (§5.2). */
+export const AI_MAX_FILE_BYTES = 10 * 1024 * 1024;
+
 function aiForm(payload: AiGeneratePayload & { file: File }) {
   const form = new FormData();
+  // The document endpoints take no prompt field; only these form fields (§5.2).
   form.set("file", payload.file);
-  if (payload.prompt?.trim()) form.set("prompt", payload.prompt.trim());
   if (payload.question_count) form.set("question_count", String(payload.question_count));
   if (payload.options_per_question) form.set("options_per_question", String(payload.options_per_question));
   form.set("persist", String(payload.persist ?? true));
   if (payload.provider) form.set("provider", payload.provider);
-  if (payload.model) form.set("model", payload.model);
+  if (payload.model?.trim()) form.set("model", payload.model.trim());
   return form;
 }
 
@@ -205,10 +249,12 @@ export const studioApi = {
   updateOption: (optionId: string, payload: { text?: string; is_correct?: boolean; order_index?: number }) =>
     patch(`/courses/quiz/options/${optionId}`, payload),
   deleteOption: (optionId: string) => del(`/courses/quiz/options/${optionId}`),
-  aiGenerate: (itemId: string, payload: AiGeneratePayload) =>
-    post<AiGenerateResult>(`/courses/items/${itemId}/quiz/ai-generate`, payload),
-  aiAutocomplete: (itemId: string, payload: AiGeneratePayload & { file: File }) =>
-    post<AiGenerateResult>(`/courses/items/${itemId}/quiz/ai-autocomplete`, aiForm(payload)),
+  // AI drafting (AI_ASSESSMENT_AUTHORING_API.md). The server allows the provider
+  // 60s, so these get a longer client timeout (§10) and accept a cancel signal.
+  aiGenerate: (itemId: string, payload: AiGeneratePayload, opts?: RequestOptions) =>
+    post<AiGenerateResult>(`/courses/items/${itemId}/quiz/ai-generate`, payload, { timeoutMs: AI_TIMEOUT_MS, ...opts }),
+  aiAutocomplete: (itemId: string, payload: AiGeneratePayload & { file: File }, opts?: RequestOptions) =>
+    post<AiGenerateResult>(`/courses/items/${itemId}/quiz/ai-autocomplete`, aiForm(payload), { timeoutMs: AI_TIMEOUT_MS, ...opts }),
 
   /* Quiz groups (§6.6) */
   createGroupSection: (itemId: string, payload: { title: string; order_index?: number; questions_to_ask?: number | null }) =>
@@ -220,10 +266,13 @@ export const studioApi = {
   deleteGroupSection: (sectionId: string) => del(`/courses/quiz-group/sections/${sectionId}`),
   createGroupQuestion: (sectionId: string, payload: QuestionPayload) =>
     post<QuizQuestion>(`/courses/quiz-group/sections/${sectionId}/questions`, payload),
-  groupAiGenerate: (sectionId: string, payload: AiGeneratePayload) =>
-    post<AiGenerateResult>(`/courses/quiz-group/sections/${sectionId}/ai-generate`, payload),
-  groupAiAutocomplete: (sectionId: string, payload: AiGeneratePayload & { file: File }) =>
-    post<AiGenerateResult>(`/courses/quiz-group/sections/${sectionId}/ai-autocomplete`, aiForm(payload)),
+  groupAiGenerate: (sectionId: string, payload: AiGeneratePayload, opts?: RequestOptions) =>
+    post<AiGenerateResult>(`/courses/quiz-group/sections/${sectionId}/ai-generate`, payload, { timeoutMs: AI_TIMEOUT_MS, ...opts }),
+  groupAiAutocomplete: (sectionId: string, payload: AiGeneratePayload & { file: File }, opts?: RequestOptions) =>
+    post<AiGenerateResult>(`/courses/quiz-group/sections/${sectionId}/ai-autocomplete`, aiForm(payload), {
+      timeoutMs: AI_TIMEOUT_MS,
+      ...opts,
+    }),
 
   /* Governance — author (§7) */
   getGovernance: (courseId: string) => get<CourseGovernance>(`/courses/${courseId}/governance`),

@@ -17,12 +17,15 @@ export function QuestionBuilder({
   readOnly,
   title = "Questions",
   description,
+  drawCount,
 }: {
   questions: QuizQuestion[] | undefined;
   target: QuestionTarget;
   readOnly: boolean;
   title?: string;
   description?: React.ReactNode;
+  /** Quiz-group pools: questions drawn per attempt (guides AI generation). */
+  drawCount?: number | null;
 }) {
   const write = useAssessmentWrite();
   const [composerOpen, setComposerOpen] = useState(false);
@@ -145,7 +148,7 @@ export function QuestionBuilder({
         )
       )}
 
-      <AiQuestionGenerator open={aiOpen} onOpenChange={setAiOpen} target={target} existing={sorted} />
+      <AiQuestionGenerator open={aiOpen} onOpenChange={setAiOpen} target={target} existing={sorted} drawCount={drawCount} />
     </section>
   );
 }
