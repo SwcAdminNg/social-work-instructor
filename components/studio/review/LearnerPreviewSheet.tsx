@@ -53,6 +53,7 @@ export function LearnerPreviewSheet({
         <CoursePreview
           course={course}
           sections={sections}
+          revisionId={revisionId}
           loading={!!revisionId && preview.isPending}
           error={revisionId && preview.isError ? errorMessage(preview.error) : null}
           onRetry={() => preview.refetch()}

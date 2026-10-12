@@ -280,6 +280,11 @@ export const studioApi = {
   listRevisions: (courseId: string) => get<OpenRevisionSummary[]>(`/courses/${courseId}/revisions`),
   getRevision: (id: string) => get<Revision>(`/governance/revisions/${id}`),
   getDiff: (id: string) => get<RevisionDiff>(`/governance/revisions/${id}/diff`),
+  /** Short-lived URL to open a document in a revision under review (any reviewer who can view it). */
+  getRevisionDocument: (revisionId: string, itemId: string) =>
+    get<{ download_url: string; file_name: string; mime_type?: string | null; file_size_bytes?: number | null }>(
+      `/governance/revisions/${revisionId}/items/${itemId}/document`,
+    ),
   getPreview: (id: string) => get<{ sections?: unknown[] } & Record<string, unknown>>(`/governance/revisions/${id}/preview`),
   getTree: (id: string) => get<ManagedCourse | { sections?: ManagedCourse["sections"] }>(`/governance/revisions/${id}/tree`),
   submit: (id: string, payload: SubmitPayload) => post<Revision>(`/governance/revisions/${id}/submit`, payload),

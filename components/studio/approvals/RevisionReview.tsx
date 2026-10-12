@@ -282,6 +282,7 @@ export function RevisionReview({
               course={course.data}
               fallbackTitle={rev.course_title}
               sections={preview.data}
+              revisionId={rev.id}
               loading={preview.isPending}
               error={preview.isError ? errorMessage(preview.error) : null}
               onRetry={() => preview.refetch()}

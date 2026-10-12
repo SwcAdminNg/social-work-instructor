@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { toast } from "sonner";
 import {
   Award,
   BarChart3,
@@ -14,6 +15,7 @@ import {
   Eye,
   FileText,
   Layers,
+  Loader2,
   Link2,
   ListChecks,
   PenLine,
@@ -29,6 +31,7 @@ import {
   formatDateTime,
   formatMinutes,
 } from "@/lib/studio/labels";
+import { studioApi } from "@/lib/studio/api";
 import type { AssessmentType, CourseCategory, CourseLevel, InstructorCredit, ItemType } from "@/lib/studio/types";
 
 /* Loose learner-format shapes: the preview endpoint mirrors the learner course
@@ -42,8 +45,8 @@ export type PreviewItem = {
   is_preview?: boolean;
   estimated_minutes?: number | null;
   assessment_type?: string;
-  video?: { duration_seconds?: number | null; status?: string } | null;
-  document?: { file_name?: string; file_size_bytes?: number | null } | null;
+  video?: { duration_seconds?: number | null; status?: string; playback_url?: string | null } | null;
+  document?: { file_name?: string; file_size_bytes?: number | null; is_uploaded?: boolean } | null;
   link?: { url?: string; label?: string | null; description?: string | null } | null;
   live_session?: { scheduled_start_at?: string; duration_minutes?: number; guest_name?: string | null; guest_title?: string | null } | null;
   assessment?: {
@@ -111,6 +114,8 @@ export type CoursePreviewProps = {
   loading?: boolean;
   error?: string | null;
   onRetry?: () => void;
+  /** When set, uploaded documents can be opened (reviewers are not enrolled, so they need this). */
+  revisionId?: string | null;
   className?: string;
 };
 
@@ -118,7 +123,7 @@ export type CoursePreviewProps = {
  * The course as a learner sees it: hero, outcomes, requirements and the
  * module/lesson accordion. Never shows correct answers.
  */
-export function CoursePreview({ sections, course, fallbackTitle, loading, error, onRetry, className }: CoursePreviewProps) {
+export function CoursePreview({ sections, course, fallbackTitle, loading, error, onRetry, revisionId, className }: CoursePreviewProps) {
   if (loading) return <PreviewSkeleton className={className} />;
   if (error) {
     return (
@@ -249,12 +254,22 @@ export function CoursePreview({ sections, course, fallbackTitle, loading, error,
         </div>
       )}
 
-      <CurriculumAccordion modules={modules} lessons={lessons} minutes={minutes} />
+      <CurriculumAccordion modules={modules} lessons={lessons} minutes={minutes} revisionId={revisionId} />
     </div>
   );
 }
 
-function CurriculumAccordion({ modules, lessons, minutes }: { modules: PreviewSection[]; lessons: number; minutes: number }) {
+function CurriculumAccordion({
+  modules,
+  lessons,
+  minutes,
+  revisionId,
+}: {
+  modules: PreviewSection[];
+  lessons: number;
+  minutes: number;
+  revisionId?: string | null;
+}) {
   const [open, setOpen] = useState<Record<string, boolean>>(() => (modules[0] ? { [modules[0].id]: true } : {}));
   const allOpen = modules.length > 0 && modules.every((m) => open[m.id]);
 
@@ -312,7 +327,7 @@ function CurriculumAccordion({ modules, lessons, minutes }: { modules: PreviewSe
                   <ul className="divide-y divide-slate-100 dark:divide-ink-line">
                     {items.length === 0 && <li className="px-5 py-4 text-sm text-slate-500">This module is empty.</li>}
                     {items.map((item) => (
-                      <LessonRow key={item.id} item={item} />
+                      <LessonRow key={item.id} item={item} revisionId={revisionId} />
                     ))}
                   </ul>
                 )}
@@ -325,13 +340,28 @@ function CurriculumAccordion({ modules, lessons, minutes }: { modules: PreviewSe
   );
 }
 
-function LessonRow({ item }: { item: PreviewItem }) {
+function LessonRow({ item, revisionId }: { item: PreviewItem; revisionId?: string | null }) {
   const [expanded, setExpanded] = useState(false);
+  const [opening, setOpening] = useState(false);
   const type = (item.item_type ?? "DOCUMENT") as ItemType;
   const Icon = ITEM_ICONS[type] ?? FileText;
   const aType = assessmentType(item);
   const mins = itemMinutes(item);
   const details = lessonDetails(item);
+  const canOpenDocument = type === "DOCUMENT" && !!revisionId && item.document?.is_uploaded !== false;
+
+  async function openDocument() {
+    if (!revisionId || opening) return;
+    setOpening(true);
+    try {
+      const doc = await studioApi.getRevisionDocument(revisionId, item.id);
+      window.open(doc.download_url, "_blank", "noopener,noreferrer");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "This document could not be opened.");
+    } finally {
+      setOpening(false);
+    }
+  }
   const typeLabel = type === "ASSESSMENT" && aType ? ASSESSMENT_TYPE_LABELS[aType] ?? "Assessment" : ITEM_TYPE_LABELS[type] ?? "Lesson";
   const sub =
     type === "LIVE_SESSION"
@@ -364,6 +394,22 @@ function LessonRow({ item }: { item: PreviewItem }) {
             <Badge size="xs" tone="warning" icon={Eye}>
               Free preview
             </Badge>
+          )}
+          {canOpenDocument && (
+            <Button size="xs" variant="outline" icon={opening ? Loader2 : FileText} onClick={openDocument} disabled={opening}>
+              Open
+            </Button>
+          )}
+          {type === "VIDEO" && item.video?.playback_url && (
+            <a
+              href={item.video.playback_url}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Watch video"
+              className="grid h-7 w-7 place-items-center rounded-md text-slate-400 hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-white/8"
+            >
+              <PlayCircle className="h-3.5 w-3.5" />
+            </a>
           )}
           {type === "LINKS" && item.link?.url && (
             <a
