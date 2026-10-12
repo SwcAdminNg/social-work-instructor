@@ -1,12 +1,14 @@
 "use client";
 
 import { useState } from "react";
+import { ItemViewerSheet } from "@/components/studio/review/ItemViewerSheet";
 import {
   CalendarDays,
   Check,
   ChevronDown,
   ClipboardCheck,
   ExternalLink,
+  Eye,
   FileText,
   Layers,
   Link2,
@@ -35,7 +37,9 @@ export function AnswersTree({
   loading,
   error,
   onRetry,
+  revisionId,
 }: {
+  revisionId?: string | null;
   sections?: Section[];
   loading?: boolean;
   error?: string | null;
@@ -100,7 +104,7 @@ export function AnswersTree({
             ) : (
               <ul className="divide-y divide-slate-100 dark:divide-ink-line">
                 {items.map((item) => (
-                  <ItemNode key={item.id} item={item} defaultOpen={item.item_type === "ASSESSMENT"} />
+                  <ItemNode key={item.id} item={item} revisionId={revisionId} defaultOpen={item.item_type === "ASSESSMENT"} />
                 ))}
               </ul>
             )}
@@ -111,8 +115,9 @@ export function AnswersTree({
   );
 }
 
-function ItemNode({ item, defaultOpen }: { item: Item; defaultOpen: boolean }) {
+function ItemNode({ item, defaultOpen, revisionId }: { item: Item; defaultOpen: boolean; revisionId?: string | null }) {
   const [open, setOpen] = useState(defaultOpen);
+  const [viewing, setViewing] = useState(false);
   const Icon = ICONS[item.item_type] ?? FileText;
   const a = item.assessment;
   const typeLabel = a ? ASSESSMENT_TYPE_LABELS[a.assessment_type] : ITEM_TYPE_LABELS[item.item_type];
@@ -140,7 +145,32 @@ function ItemNode({ item, defaultOpen }: { item: Item; defaultOpen: boolean }) {
         </div>
         <ChevronDown className={cn("h-4 w-4 flex-shrink-0 text-slate-400 transition-transform", open && "rotate-180")} />
       </button>
-      {open && <div className="px-4 pb-4 sm:px-5 sm:pl-[60px]">{<ItemDetail item={item} />}</div>}
+      {open && (
+        <div className="px-4 pb-4 sm:px-5 sm:pl-[60px]">
+          <ItemDetail item={item} />
+          {revisionId && item.item_type !== "ASSESSMENT" && (
+            <Button size="sm" variant="outline" icon={Eye} className="mt-3" onClick={() => setViewing(true)}>
+              View in depth
+            </Button>
+          )}
+        </div>
+      )}
+      {revisionId && viewing && (
+        <ItemViewerSheet
+          open
+          onOpenChange={setViewing}
+          revisionId={revisionId}
+          item={{
+            id: item.id,
+            title: item.title,
+            item_type: item.item_type,
+            video: item.video as never,
+            document: item.document as never,
+            link: item.link as never,
+            live_session: item.live_session as never,
+          }}
+        />
+      )}
     </li>
   );
 }

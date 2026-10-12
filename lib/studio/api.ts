@@ -282,7 +282,7 @@ export const studioApi = {
   getDiff: (id: string) => get<RevisionDiff>(`/governance/revisions/${id}/diff`),
   /** Short-lived URL to open a document in a revision under review (any reviewer who can view it). */
   getRevisionDocument: (revisionId: string, itemId: string) =>
-    get<{ download_url: string; file_name: string; mime_type?: string | null; file_size_bytes?: number | null }>(
+    get<{ download_url: string; view_url?: string; file_name: string; mime_type?: string | null; file_size_bytes?: number | null }>(
       `/governance/revisions/${revisionId}/items/${itemId}/document`,
     ),
   getPreview: (id: string) => get<{ sections?: unknown[] } & Record<string, unknown>>(`/governance/revisions/${id}/preview`),

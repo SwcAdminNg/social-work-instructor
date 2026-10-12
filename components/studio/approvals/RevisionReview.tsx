@@ -290,6 +290,7 @@ export function RevisionReview({
           )}
           {tab === "answers" && (
             <AnswersTree
+              revisionId={rev.id}
               sections={tree.data}
               loading={tree.isPending}
               error={tree.isError ? errorMessage(tree.error) : null}

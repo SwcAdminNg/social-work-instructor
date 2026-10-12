@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { toast } from "sonner";
 import {
   Award,
   BarChart3,
@@ -15,7 +14,6 @@ import {
   Eye,
   FileText,
   Layers,
-  Loader2,
   Link2,
   ListChecks,
   PenLine,
@@ -31,7 +29,7 @@ import {
   formatDateTime,
   formatMinutes,
 } from "@/lib/studio/labels";
-import { studioApi } from "@/lib/studio/api";
+import { ItemViewerSheet } from "./ItemViewerSheet";
 import type { AssessmentType, CourseCategory, CourseLevel, InstructorCredit, ItemType } from "@/lib/studio/types";
 
 /* Loose learner-format shapes: the preview endpoint mirrors the learner course
@@ -342,26 +340,13 @@ function CurriculumAccordion({
 
 function LessonRow({ item, revisionId }: { item: PreviewItem; revisionId?: string | null }) {
   const [expanded, setExpanded] = useState(false);
-  const [opening, setOpening] = useState(false);
+  const [viewing, setViewing] = useState(false);
   const type = (item.item_type ?? "DOCUMENT") as ItemType;
   const Icon = ITEM_ICONS[type] ?? FileText;
   const aType = assessmentType(item);
   const mins = itemMinutes(item);
   const details = lessonDetails(item);
-  const canOpenDocument = type === "DOCUMENT" && !!revisionId && item.document?.is_uploaded !== false;
-
-  async function openDocument() {
-    if (!revisionId || opening) return;
-    setOpening(true);
-    try {
-      const doc = await studioApi.getRevisionDocument(revisionId, item.id);
-      window.open(doc.download_url, "_blank", "noopener,noreferrer");
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : "This document could not be opened.");
-    } finally {
-      setOpening(false);
-    }
-  }
+  const canView = !!revisionId;
   const typeLabel = type === "ASSESSMENT" && aType ? ASSESSMENT_TYPE_LABELS[aType] ?? "Assessment" : ITEM_TYPE_LABELS[type] ?? "Lesson";
   const sub =
     type === "LIVE_SESSION"
@@ -395,21 +380,10 @@ function LessonRow({ item, revisionId }: { item: PreviewItem; revisionId?: strin
               Free preview
             </Badge>
           )}
-          {canOpenDocument && (
-            <Button size="xs" variant="outline" icon={opening ? Loader2 : FileText} onClick={openDocument} disabled={opening}>
-              Open
+          {canView && (
+            <Button size="xs" variant="outline" icon={Eye} onClick={() => setViewing(true)}>
+              View
             </Button>
-          )}
-          {type === "VIDEO" && item.video?.playback_url && (
-            <a
-              href={item.video.playback_url}
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label="Watch video"
-              className="grid h-7 w-7 place-items-center rounded-md text-slate-400 hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-white/8"
-            >
-              <PlayCircle className="h-3.5 w-3.5" />
-            </a>
           )}
           {type === "LINKS" && item.link?.url && (
             <a
@@ -436,6 +410,15 @@ function LessonRow({ item, revisionId }: { item: PreviewItem; revisionId?: strin
         </div>
       </div>
       {expanded && details && <div className="px-4 pb-4 pl-[60px] sm:px-5 sm:pl-[64px]">{details}</div>}
+      {revisionId && viewing && (
+        <ItemViewerSheet
+          open
+          onOpenChange={setViewing}
+          revisionId={revisionId}
+          item={{ ...item, item_type: type, title: item.link?.label || item.title }}
+          extra={details}
+        />
+      )}
     </li>
   );
 }
