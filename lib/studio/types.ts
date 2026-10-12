@@ -426,6 +426,9 @@ export type RevisionDecision = {
 
 export type Revision = OpenRevisionSummary & {
   current_stage?: Stage;
+  /** Stage + reviewer a return from the current stage goes back to first (absent -> the author). */
+  previous_stage?: Stage | null;
+  previous_reviewer?: { id: string; name: string } | null;
   computed_risk?: Risk;
   effective_risk?: Risk;
   declared_risk?: Risk;
@@ -511,6 +514,7 @@ export type DecisionPayload = {
   conditions?: string[];
   escalate_to?: Risk | null;
   flags?: RiskFlag[];
+  return_to?: "PREVIOUS_REVIEWER" | "AUTHOR";
 };
 
 export type CourseVersion = {

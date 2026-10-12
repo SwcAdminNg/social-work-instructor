@@ -198,6 +198,8 @@ function ActionDialog({
   const [reviewerId, setReviewerId] = useState("");
   const [due, setDue] = useState("");
   const [level, setLevel] = useState<Risk | "">("");
+  const [returnTo, setReturnTo] = useState<"PREVIOUS_REVIEWER" | "AUTHOR">("PREVIOUS_REVIEWER");
+  const hasPrevious = !!revision.previous_stage;
 
   const effective = (revision.effective_risk ?? revision.computed_risk) as Risk | undefined;
   const openConditions = revision.open_conditions ?? [];
@@ -231,7 +233,9 @@ function ActionDialog({
           );
           break;
         case "RETURN_FOR_REVISION":
-          await perform(() => studioApi.decide(id, { decision: "RETURNED_FOR_REVISION", comment: c }), "Returned to the author");
+          await perform(() => studioApi.decide(id, { decision: "RETURNED_FOR_REVISION", comment: c, return_to: hasPrevious ? returnTo : "AUTHOR" }),
+            hasPrevious && returnTo === "PREVIOUS_REVIEWER" ? "Sent back to the previous reviewer" : "Returned to the author",
+          );
           break;
         case "REJECT":
           await perform(() => studioApi.decide(id, { decision: "REJECTED", comment: c }), "Revision rejected");
@@ -362,8 +366,30 @@ function ActionDialog({
           </>
         )}
 
-        {action === "RETURN_FOR_REVISION" &&
-          commentField("What needs to change?", true, "Be specific — the author sees this first. Pin detailed notes in the discussion.")}
+        {action === "RETURN_FOR_REVISION" && (
+          <>
+            {hasPrevious && (
+              <fieldset className="flex flex-col gap-2">
+                <legend className="mb-1 text-sm font-semibold text-slate-700 dark:text-slate-200">Send it back to</legend>
+                {(
+                  [
+                    ["PREVIOUS_REVIEWER", `${stageLabel(revision.previous_stage as string)}${revision.previous_reviewer?.name ? ` · ${revision.previous_reviewer.name}` : ""}`, "They see it in their Awaiting me and can approve it again or return it on."],
+                    ["AUTHOR", "The author", "Ends this review round; the author edits and resubmits."],
+                  ] as const
+                ).map(([value, label, hint]) => (
+                  <label key={value} className="flex cursor-pointer items-start gap-2.5 rounded-xl border border-slate-200 p-3 text-sm dark:border-ink-line">
+                    <input type="radio" name="return-to" checked={returnTo === value} onChange={() => setReturnTo(value)} className="mt-1" />
+                    <span>
+                      <span className="block font-semibold text-slate-800 dark:text-slate-100">{label}</span>
+                      <span className="block text-xs text-slate-500 dark:text-slate-400">{hint}</span>
+                    </span>
+                  </label>
+                ))}
+              </fieldset>
+            )}
+            {commentField("What needs to change?", true, "Be specific — the recipient sees this first. Pin detailed notes in the discussion.")}
+          </>
+        )}
 
         {action === "REJECT" && commentField("Why is it being rejected?", true, "The author sees this reason.", "Rejection closes this revision. A new course keeps its content; a live course keeps its live version.")}
 
