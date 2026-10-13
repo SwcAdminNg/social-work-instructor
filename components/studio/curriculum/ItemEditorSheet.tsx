@@ -20,6 +20,7 @@ import { UploadProgressCard, VideoPanel } from "./VideoUpload";
 type Draft = {
   title: string;
   minutes: string;
+  item_description: string;
   is_preview: boolean;
   downloadable: boolean;
   url: string;
@@ -35,6 +36,7 @@ function draftFrom(item: Item): Draft {
   return {
     title: item.title ?? "",
     minutes: item.estimated_minutes != null ? String(item.estimated_minutes) : "",
+    item_description: item.item_description ?? "",
     is_preview: !!item.is_preview,
     downloadable: !!item.document?.downloadable,
     url: item.link?.url ?? "",
@@ -92,6 +94,7 @@ function DocumentPanel({
           order_index: item.order_index,
           is_preview: !!item.is_preview,
           estimated_minutes: item.estimated_minutes ?? null,
+          item_description: item.item_description ?? null,
           file_name: file.name,
           downloadable: !!doc.downloadable,
         }),
@@ -214,6 +217,9 @@ function ItemEditorBody({
         case "minutes":
           if (v.minutes && !/^\d+$/.test(v.minutes)) e.minutes = "Use whole minutes.";
           else payload.estimated_minutes = v.minutes ? Number(v.minutes) : null;
+          break;
+        case "item_description":
+          payload.item_description = v.item_description.trim() || null;
           break;
         case "is_preview":
           payload.is_preview = v.is_preview;
@@ -399,6 +405,22 @@ function ItemEditorBody({
                 description="Anyone can open this before enrolling — a great way to show what the course is like."
               />
             </div>
+            <Field
+              label="Lesson description"
+              htmlFor={fid("itemdesc")}
+              optional
+              hint={`Optional text shown to learners above this item. Blank line = new paragraph, "- " = bullet, "## " = sub-heading, **bold**.`}
+            >
+              <Textarea
+                id={fid("itemdesc")}
+                rows={7}
+                maxLength={10000}
+                value={v.item_description}
+                disabled={readOnly}
+                placeholder="Explain what this lesson covers and why it matters. Learners read this above the activity."
+                onChange={(e) => draft.set("item_description", e.target.value)}
+              />
+            </Field>
           </div>
         </PanelCard>
 

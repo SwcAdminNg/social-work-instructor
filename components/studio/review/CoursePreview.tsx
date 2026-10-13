@@ -30,6 +30,7 @@ import {
   formatMinutes,
 } from "@/lib/studio/labels";
 import { ItemViewerSheet } from "./ItemViewerSheet";
+import { LessonDescription } from "./LessonDescription";
 import type { AssessmentType, CourseCategory, CourseLevel, InstructorCredit, ItemType } from "@/lib/studio/types";
 
 /* Loose learner-format shapes: the preview endpoint mirrors the learner course
@@ -42,6 +43,7 @@ export type PreviewItem = {
   order_index?: number;
   is_preview?: boolean;
   estimated_minutes?: number | null;
+  item_description?: string | null;
   assessment_type?: string;
   video?: { duration_seconds?: number | null; status?: string; playback_url?: string | null } | null;
   document?: { file_name?: string; file_size_bytes?: number | null; is_uploaded?: boolean } | null;
@@ -345,7 +347,17 @@ function LessonRow({ item, revisionId }: { item: PreviewItem; revisionId?: strin
   const Icon = ITEM_ICONS[type] ?? FileText;
   const aType = assessmentType(item);
   const mins = itemMinutes(item);
-  const details = lessonDetails(item);
+  const assessmentDetails = lessonDetails(item);
+  const hasDescription = !!item.item_description?.trim();
+  // The learner-facing lesson description comes first, then (for assessments) what
+  // the learner will be asked - the same order the learner sees them in.
+  const details: React.ReactNode =
+    hasDescription || assessmentDetails ? (
+      <>
+        {hasDescription && <LessonDescription text={item.item_description} />}
+        {assessmentDetails && <div className={hasDescription ? "mt-4" : undefined}>{assessmentDetails}</div>}
+      </>
+    ) : null;
   const canView = !!revisionId;
   const typeLabel = type === "ASSESSMENT" && aType ? ASSESSMENT_TYPE_LABELS[aType] ?? "Assessment" : ITEM_TYPE_LABELS[type] ?? "Lesson";
   const sub =

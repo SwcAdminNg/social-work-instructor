@@ -84,6 +84,7 @@ export function AddItemDialog({
   // Common
   const [title, setTitle] = useState("");
   const [minutes, setMinutes] = useState("");
+  const [itemDescription, setItemDescription] = useState("");
   const [preview, setPreview] = useState(false);
   // Files
   const [file, setFile] = useState<File | null>(null);
@@ -173,6 +174,7 @@ export function AddItemDialog({
       order_index: section.items?.length ?? 0,
       is_preview: preview,
       estimated_minutes: minutes ? Number(minutes) : null,
+      item_description: itemDescription.trim() || null,
     };
     switch (kind) {
       case "DOCUMENT":
@@ -514,6 +516,22 @@ export function AddItemDialog({
               <Switch checked={preview} onChange={setPreview} label="Free preview" description="Anyone can open this before enrolling." />
             </div>
           </div>
+
+          <Field
+            label="Lesson description"
+            htmlFor={fid("itemdesc")}
+            optional
+            hint={`Optional text shown to learners above this item. Blank line = new paragraph, "- " = bullet, "## " = sub-heading, **bold**.`}
+          >
+            <Textarea
+              id={fid("itemdesc")}
+              rows={5}
+              maxLength={10000}
+              value={itemDescription}
+              onChange={(e) => setItemDescription(e.target.value)}
+              placeholder="Explain what this lesson covers and why it matters."
+            />
+          </Field>
 
           {kind === "VIDEO" && !file && (
             <p className="flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400">

@@ -65,6 +65,7 @@ const FIELD_LABELS: Record<string, string> = {
   order_index: "Position",
   is_preview: "Free preview",
   estimated_minutes: "Duration (min)",
+  item_description: "Lesson description",
   is_correct: "Correct answer",
   text: "Text",
   pass_mark_percentage: "Pass mark (%)",

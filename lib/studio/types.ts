@@ -268,6 +268,7 @@ export type Item = {
   order_index: number;
   is_preview?: boolean;
   estimated_minutes?: number | null;
+  item_description?: string | null;
   video?: {
     status?: VideoStatus;
     bunny_video_guid?: string;
@@ -313,6 +314,7 @@ export type ItemCreatePayload = {
   order_index?: number;
   is_preview?: boolean;
   estimated_minutes?: number | null;
+  item_description?: string | null;
   // DOCUMENT
   file_name?: string;
   downloadable?: boolean;
@@ -341,6 +343,7 @@ export type ItemUpdatePayload = Partial<
     | "order_index"
     | "is_preview"
     | "estimated_minutes"
+    | "item_description"
     | "downloadable"
     | "url"
     | "label"
