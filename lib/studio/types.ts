@@ -32,7 +32,7 @@ export type CourseCategory =
   | "LIFESTYLE"
   | "LANGUAGE";
 export type AccessMode = "SELF_PACED" | "SCHEDULED";
-export type ItemType = "VIDEO" | "DOCUMENT" | "LINKS" | "LIVE_SESSION" | "ASSESSMENT";
+export type ItemType = "VIDEO" | "DOCUMENT" | "LINKS" | "LIVE_SESSION" | "ASSESSMENT" | "SCORM";
 export type AssessmentType = "QUIZ" | "ESSAY" | "QUIZ_GROUP";
 export type SubmissionMode = "TEXT" | "DOCUMENT";
 export type MultiAnswerMode = "AND" | "OR";
@@ -293,6 +293,23 @@ export type Item = {
     status?: LiveSessionStatus;
   } | null;
   assessment?: Assessment | null;
+  /** SCORM / interactive package (item_type SCORM). */
+  scorm?: ScormPackage | null;
+};
+
+export type ScormPackage = {
+  status?: VideoStatus;
+  scorm_version?: string | null;
+  manifest_title?: string | null;
+  manifest_identifier?: string | null;
+  completion_from_package?: boolean;
+  file_name?: string;
+  file_size_bytes?: number | null;
+  storage_key?: string;
+  launch_path?: string | null;
+  file_count?: number | null;
+  total_size_bytes?: number | null;
+  error_message?: string | null;
 };
 
 export type VideoUploadCredentials = {
@@ -306,6 +323,7 @@ export type VideoUploadCredentials = {
 export type ItemCreateResult = Item & {
   video_upload?: VideoUploadCredentials | null;
   document_upload?: { upload_url: string; storage_key: string } | null;
+  scorm_upload?: { upload_url: string; storage_key: string } | null;
 };
 
 export type ItemCreatePayload = {
@@ -315,9 +333,11 @@ export type ItemCreatePayload = {
   is_preview?: boolean;
   estimated_minutes?: number | null;
   item_description?: string | null;
-  // DOCUMENT
+  // DOCUMENT (and SCORM: the zip's name)
   file_name?: string;
   downloadable?: boolean;
+  // SCORM: when false, opening the lesson completes it
+  scorm_completion_from_package?: boolean;
   // LINKS
   url?: string;
   label?: string | null;
@@ -345,6 +365,7 @@ export type ItemUpdatePayload = Partial<
     | "estimated_minutes"
     | "item_description"
     | "downloadable"
+    | "scorm_completion_from_package"
     | "url"
     | "label"
     | "description"

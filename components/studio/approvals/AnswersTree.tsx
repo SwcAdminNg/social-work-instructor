@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { ItemViewerSheet } from "@/components/studio/review/ItemViewerSheet";
 import {
+  Boxes,
   CalendarDays,
   Check,
   ChevronDown,
@@ -26,6 +27,7 @@ const ICONS: Record<ItemType, LucideIcon> = {
   LINKS: Link2,
   LIVE_SESSION: CalendarDays,
   ASSESSMENT: ClipboardCheck,
+  SCORM: Boxes,
 };
 
 /**
@@ -200,6 +202,14 @@ function ItemDetail({ item }: { item: Item }) {
           <Fact label="File" value={item.document?.file_name || "—"} />
           <Fact label="Upload" value={item.document?.is_uploaded ? `Complete${item.document.file_size_bytes ? ` · ${formatBytes(item.document.file_size_bytes)}` : ""}` : "Incomplete"} />
           <Fact label="Downloadable" value={item.document?.downloadable ? "Yes" : "No"} />
+        </div>
+      );
+    case "SCORM":
+      return (
+        <div className="grid gap-2 sm:grid-cols-3">
+          <Fact label="Package" value={item.scorm?.manifest_title || item.scorm?.file_name || "—"} />
+          <Fact label="Format" value={item.scorm?.scorm_version ? `SCORM ${item.scorm.scorm_version}` : "Web package"} />
+          <Fact label="Status" value={humanize(item.scorm?.status) || "Not uploaded"} />
         </div>
       );
     case "LINKS":

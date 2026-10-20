@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import {
   ArrowRight,
   BookOpen,
+  Boxes,
   CalendarDays,
   ChevronDown,
   CircleHelp,
@@ -33,6 +34,7 @@ const ITEM_ICONS: Record<ItemType, LucideIcon> = {
   LINKS: Link2,
   LIVE_SESSION: CalendarDays,
   ASSESSMENT: ClipboardCheck,
+  SCORM: Boxes,
 };
 
 const ENTITY_ICONS: Record<string, LucideIcon> = {

@@ -1,4 +1,5 @@
 import {
+  Boxes,
   ClipboardList,
   FileText,
   Layers,
@@ -12,7 +13,7 @@ import type { Tone } from "@/lib/studio/labels";
 import type { Item, Section } from "@/lib/studio/types";
 
 /** What the author picks in "Add lesson" — assessments are split by flavour. */
-export type ItemKind = "VIDEO" | "DOCUMENT" | "LINKS" | "LIVE_SESSION" | "QUIZ" | "ESSAY" | "QUIZ_GROUP";
+export type ItemKind = "VIDEO" | "DOCUMENT" | "SCORM" | "LINKS" | "LIVE_SESSION" | "QUIZ" | "ESSAY" | "QUIZ_GROUP";
 
 export const KIND_META: Record<ItemKind, { label: string; noun: string; icon: LucideIcon; tone: Tone; description: string }> = {
   VIDEO: {
@@ -28,6 +29,13 @@ export const KIND_META: Record<ItemKind, { label: string; noun: string; icon: Lu
     icon: FileText,
     tone: "info",
     description: "A PDF, slide deck, worksheet or template learners can read.",
+  },
+  SCORM: {
+    label: "Interactive package",
+    noun: "interactive package",
+    icon: Boxes,
+    tone: "success",
+    description: "A SCORM or zipped HTML lesson built in an authoring tool, played in the course with progress tracked.",
   },
   LINKS: {
     label: "Link",

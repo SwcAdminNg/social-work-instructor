@@ -1,6 +1,7 @@
 // Browser-side client for the authoring + governance API. Every call goes
 // through the authenticated `/api/proxy/*` route.
 import type {
+  Item,
   AiGeneratePayload,
   AiGenerateResult,
   ApprovalCounts,
@@ -233,6 +234,17 @@ export const studioApi = {
   refreshVideoUpload: (itemId: string) => post<VideoUploadCredentials>(`/courses/items/${itemId}/video/refresh-upload`),
   finalizeDocument: (itemId: string, payload: { mime_type?: string; file_size_bytes?: number }) =>
     post(`/courses/items/${itemId}/document/finalize`, payload),
+  /** After the package zip is PUT to storage: validates and unpacks it (synchronous, a few seconds). */
+  finalizeScorm: (itemId: string, payload: { file_size_bytes?: number }) =>
+    post<Item>(`/courses/items/${itemId}/scorm/finalize`, payload),
+  /** Credentials to upload a replacement zip for an existing package lesson. */
+  refreshScormUpload: (itemId: string, fileName: string) =>
+    post<{ upload_url: string; storage_key: string }>(`/courses/items/${itemId}/scorm/refresh-upload${qs({ file_name: fileName })}`),
+  /** Short-lived learner-style launch URL for the package (browse mode, nothing saved). */
+  scormPreview: (itemId: string) =>
+    get<{ launch_url: string; launch_path: string; scorm_version?: string | null; expires_at: string }>(
+      `/courses/items/${itemId}/scorm/preview`,
+    ),
   updateAssessment: (itemId: string, payload: AssessmentUpdatePayload) =>
     patch(`/courses/items/${itemId}/assessment`, payload),
 
@@ -284,6 +296,11 @@ export const studioApi = {
   getRevisionDocument: (revisionId: string, itemId: string) =>
     get<{ download_url: string; view_url?: string; file_name: string; mime_type?: string | null; file_size_bytes?: number | null }>(
       `/governance/revisions/${revisionId}/items/${itemId}/document`,
+    ),
+  /** Browse-mode launch URL for an interactive package in a revision under review. */
+  getRevisionScorm: (revisionId: string, itemId: string) =>
+    get<{ launch_url: string; launch_path: string; scorm_version?: string | null; expires_at: string }>(
+      `/governance/revisions/${revisionId}/items/${itemId}/scorm`,
     ),
   getPreview: (id: string) => get<{ sections?: unknown[] } & Record<string, unknown>>(`/governance/revisions/${id}/preview`),
   getTree: (id: string) => get<ManagedCourse | { sections?: ManagedCourse["sections"] }>(`/governance/revisions/${id}/tree`),

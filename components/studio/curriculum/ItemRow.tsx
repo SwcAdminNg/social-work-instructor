@@ -39,6 +39,27 @@ function StatusBadges({ item }: { item: Item }) {
         Upload incomplete
       </Badge>,
     );
+  if (item.item_type === "SCORM") {
+    const s = item.scorm?.status;
+    if (s === "PROCESSING")
+      badges.push(
+        <Badge key="s" tone="info" size="xs" dot pulse>
+          Unpacking
+        </Badge>,
+      );
+    else if (s === "FAILED")
+      badges.push(
+        <Badge key="s" tone="danger" size="xs">
+          Package failed
+        </Badge>,
+      );
+    else if (s !== "READY")
+      badges.push(
+        <Badge key="s" tone="warning" size="xs">
+          Upload incomplete
+        </Badge>,
+      );
+  }
   if (item.item_type === "LIVE_SESSION" && item.live_session?.status && item.live_session.status !== "SCHEDULED") {
     const st = item.live_session.status;
     badges.push(
@@ -77,6 +98,14 @@ function metaLine(item: Item) {
     const n = questionCount(item);
     parts.push(<span key="q">{n ? plural(n, "question") : "No questions yet"}</span>);
     if (kind === "QUIZ_GROUP") parts.push(<span key="g">{plural(item.assessment?.quiz_group?.sections?.length ?? 0, "pool")}</span>);
+  }
+  if (item.item_type === "SCORM" && (item.scorm?.manifest_title || item.scorm?.file_name)) {
+    parts.push(
+      <span key="pkg" className="max-w-[14rem] truncate">
+        {item.scorm?.scorm_version ? `SCORM ${item.scorm.scorm_version}` : "Web package"}
+        {item.scorm?.file_name ? ` · ${item.scorm.file_name}` : ""}
+      </span>,
+    );
   }
   if (item.item_type === "DOCUMENT" && item.document?.file_name) {
     parts.push(

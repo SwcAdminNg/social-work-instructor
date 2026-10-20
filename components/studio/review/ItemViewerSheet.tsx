@@ -6,7 +6,7 @@
 // never needs to be enrolled or own the course.
 
 import { useQuery } from "@tanstack/react-query";
-import { Download, ExternalLink, FileText, Loader2 } from "lucide-react";
+import { Boxes, Download, ExternalLink, FileText, Loader2 } from "lucide-react";
 import { HlsVideoPlayer } from "@/components/learning/HlsVideoPlayer";
 import { Sheet } from "@/components/ui/overlays";
 import { Button, Callout, Skeleton } from "@/components/ui/primitives";
@@ -20,6 +20,7 @@ export type ViewerItem = {
   video?: { duration_seconds?: number | null; status?: string; playback_url?: string | null } | null;
   document?: { file_name?: string; mime_type?: string | null; file_size_bytes?: number | null; is_uploaded?: boolean } | null;
   link?: { url?: string; label?: string | null; description?: string | null } | null;
+  scorm?: { status?: string; scorm_version?: string | null; manifest_title?: string | null; file_name?: string } | null;
   live_session?: {
     scheduled_start_at?: string;
     duration_minutes?: number;
@@ -110,10 +111,48 @@ function DocumentViewer({ revisionId, item }: { revisionId: string; item: Viewer
   );
 }
 
+function ScormViewer({ revisionId, item }: { revisionId: string; item: ViewerItem }) {
+  const launch = useQuery({
+    queryKey: ["revision-scorm", revisionId, item.id],
+    queryFn: () => studioApi.getRevisionScorm(revisionId, item.id),
+    enabled: item.scorm?.status === "READY",
+    staleTime: 5 * 60_000,
+  });
+  if (item.scorm?.status !== "READY") {
+    return (
+      <Callout tone="warning" title="Package not available">
+        {item.scorm?.status === "FAILED"
+          ? "The uploaded package could not be unpacked."
+          : "No package has been uploaded for this lesson yet."}
+      </Callout>
+    );
+  }
+  if (launch.isError) return <Callout tone="danger">Couldn&apos;t open the package preview.</Callout>;
+  return (
+    <div className="flex flex-col gap-3">
+      <p className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
+        <Boxes className="h-3.5 w-3.5" />
+        {item.scorm?.scorm_version ? `SCORM ${item.scorm.scorm_version}` : "Web package"} · browse mode, nothing is saved
+      </p>
+      <div className="aspect-[16/10] w-full overflow-hidden rounded-xl bg-slate-100 ring-1 ring-slate-200 dark:bg-black dark:ring-ink-line">
+        {launch.data?.launch_url ? (
+          <iframe src={launch.data.launch_url} title={item.title || "Package"} className="h-full w-full border-0" allow="autoplay; fullscreen" allowFullScreen />
+        ) : (
+          <div className="grid h-full place-items-center">
+            <Loader2 className="h-6 w-6 animate-spin text-slate-400" />
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 function Body({ revisionId, item, extra }: { revisionId: string; item: ViewerItem; extra?: React.ReactNode }) {
   switch (item.item_type) {
     case "DOCUMENT":
       return <DocumentViewer revisionId={revisionId} item={item} />;
+    case "SCORM":
+      return <ScormViewer revisionId={revisionId} item={item} />;
     case "VIDEO":
       return item.video?.playback_url ? (
         <div className="overflow-hidden rounded-xl bg-black">

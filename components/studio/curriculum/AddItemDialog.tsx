@@ -1,7 +1,7 @@
 "use client";
 
 import { useId, useState } from "react";
-import { ArrowLeft, FileText, Film, Flag, Plus, RefreshCw, X } from "lucide-react";
+import { ArrowLeft, Boxes, FileText, Film, Flag, Plus, RefreshCw, X } from "lucide-react";
 import { Button, Callout, ChoiceCard, cn, Field, Input, Segmented, Switch, Textarea } from "@/components/ui/primitives";
 import { DatePicker } from "@/components/ui/date-picker";
 import { Dialog } from "@/components/ui/overlays";
@@ -11,9 +11,10 @@ import type { ItemCreatePayload, Section, SubmissionMode } from "@/lib/studio/ty
 import { useCourseEditor } from "../editor/CourseEditorContext";
 import { FileDrop } from "./FileDrop";
 import { KIND_META, type ItemKind } from "./itemMeta";
+import { SCORM_ACCEPT } from "./ScormPanel";
 import { useUploads } from "./uploads";
 
-const CONTENT_KINDS: ItemKind[] = ["VIDEO", "DOCUMENT", "LINKS", "LIVE_SESSION"];
+const CONTENT_KINDS: ItemKind[] = ["VIDEO", "DOCUMENT", "SCORM", "LINKS", "LIVE_SESSION"];
 const ASSESSMENT_KINDS: ItemKind[] = ["QUIZ", "ESSAY", "QUIZ_GROUP"];
 const DOC_ACCEPT = ".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.txt,.rtf,.odt,.csv,.zip,.png,.jpg,.jpeg";
 
@@ -47,7 +48,7 @@ type Errors = Partial<Record<string, string>>;
 
 function SelectedFile({ file, onClear }: { file: File; onClear: () => void }) {
   const isVideo = file.type.startsWith("video/");
-  const Icon = isVideo ? Film : FileText;
+  const Icon = isVideo ? Film : /\.zip$/i.test(file.name) ? Boxes : FileText;
   return (
     <div className="flex items-center gap-3 rounded-xl border border-slate-200 bg-white p-3 dark:border-ink-line dark:bg-ink-raised">
       <span className="grid h-10 w-10 flex-shrink-0 place-items-center rounded-xl bg-brand-50 text-brand-600 dark:bg-brand-400/12 dark:text-brand-300">
@@ -89,6 +90,7 @@ export function AddItemDialog({
   // Files
   const [file, setFile] = useState<File | null>(null);
   const [downloadable, setDownloadable] = useState(false);
+  const [completionFromPackage, setCompletionFromPackage] = useState(true);
   // Link
   const [url, setUrl] = useState("");
   const [label, setLabel] = useState("");
@@ -131,6 +133,10 @@ export function AddItemDialog({
     else if (t.length > 255) e.title = "Keep the title under 255 characters.";
     if (minutes && (!/^\d+$/.test(minutes) || Number(minutes) < 0)) e.minutes = "Use whole minutes.";
     if (kind === "DOCUMENT" && !file) e.file = "Choose the file to upload.";
+    if (kind === "SCORM") {
+      if (!file) e.file = "Choose the package zip to upload.";
+      else if (!/\.zip$/i.test(file.name)) e.file = "The package must be a .zip file.";
+    }
     if (kind === "LINKS") {
       const u = url.trim();
       if (!u) e.url = "Paste the web address.";
@@ -179,6 +185,8 @@ export function AddItemDialog({
     switch (kind) {
       case "DOCUMENT":
         return { ...base, file_name: file!.name, downloadable };
+      case "SCORM":
+        return { ...base, file_name: file!.name, scorm_completion_from_package: completionFromPackage };
       case "LINKS":
         return { ...base, url: url.trim(), label: label.trim() || null, description: linkDescription.trim() || null };
       case "LIVE_SESSION":
@@ -240,12 +248,16 @@ export function AddItemDialog({
         success:
           kind === "VIDEO" && file
             ? "Video lesson added — uploading in the background"
-            : `${meta!.label} added`,
+            : kind === "SCORM"
+              ? "Interactive package added — uploading in the background"
+              : `${meta!.label} added`,
       });
       if (!created) return;
       if (kind === "VIDEO" && file) uploads.startVideo(created.id, file, { credentials: created.video_upload, title: title.trim() });
       if (kind === "DOCUMENT" && file && created.document_upload?.upload_url)
         void uploads.startDocument(created.id, file, created.document_upload.upload_url);
+      if (kind === "SCORM" && file && created.scorm_upload?.upload_url)
+        void uploads.startScorm(created.id, file, created.scorm_upload.upload_url);
       onCreated(created.id);
       onClose();
     } catch (err) {
@@ -339,23 +351,41 @@ export function AddItemDialog({
           {formError && <Callout tone="danger">{formError}</Callout>}
 
           {/* File first for uploads — it fills the title for you. */}
-          {(kind === "VIDEO" || kind === "DOCUMENT") && (
+          {(kind === "VIDEO" || kind === "DOCUMENT" || kind === "SCORM") && (
             <Field
-              label={kind === "VIDEO" ? "Video file" : "File"}
-              required={kind === "DOCUMENT"}
+              label={kind === "VIDEO" ? "Video file" : kind === "SCORM" ? "Package (.zip)" : "File"}
+              required={kind !== "VIDEO"}
               optional={kind === "VIDEO"}
               error={errors.file}
-              hint={kind === "VIDEO" ? "You can also add the video later from the lesson." : undefined}
+              hint={
+                kind === "VIDEO"
+                  ? "You can also add the video later from the lesson."
+                  : kind === "SCORM"
+                    ? "Export from your authoring tool as SCORM 1.2 or 2004, or zip any web page with an index.html. We unpack it and play it inside the course."
+                    : undefined
+              }
             >
               {file ? (
                 <SelectedFile file={file} onClear={() => setFile(null)} />
               ) : (
                 <FileDrop
-                  accept={kind === "VIDEO" ? "video/*" : DOC_ACCEPT}
+                  accept={kind === "VIDEO" ? "video/*" : kind === "SCORM" ? SCORM_ACCEPT : DOC_ACCEPT}
                   onFile={chooseFile}
-                  icon={kind === "VIDEO" ? Film : FileText}
-                  title={kind === "VIDEO" ? "Drop your video here or browse" : "Drop your document here or browse"}
-                  hint={kind === "VIDEO" ? "MP4, MOV or WebM. Large files are fine — uploads resume if your connection drops." : "PDF, Word, PowerPoint, Excel and more."}
+                  icon={kind === "VIDEO" ? Film : kind === "SCORM" ? Boxes : FileText}
+                  title={
+                    kind === "VIDEO"
+                      ? "Drop your video here or browse"
+                      : kind === "SCORM"
+                        ? "Drop the package zip here or browse"
+                        : "Drop your document here or browse"
+                  }
+                  hint={
+                    kind === "VIDEO"
+                      ? "MP4, MOV or WebM. Large files are fine — uploads resume if your connection drops."
+                      : kind === "SCORM"
+                        ? "One .zip with imsmanifest.xml or index.html at its root (a single wrapper folder is fine)."
+                        : "PDF, Word, PowerPoint, Excel and more."
+                  }
                 />
               )}
             </Field>
@@ -512,6 +542,14 @@ export function AddItemDialog({
             <div className="flex flex-col gap-3 sm:pt-7">
               {kind === "DOCUMENT" && (
                 <Switch checked={downloadable} onChange={setDownloadable} label="Allow download" description="Otherwise learners can only view it in the browser." />
+              )}
+              {kind === "SCORM" && (
+                <Switch
+                  checked={completionFromPackage}
+                  onChange={setCompletionFromPackage}
+                  label="Completion comes from the package"
+                  description="Off: opening the lesson is enough. Use this for content that never reports a status."
+                />
               )}
               <Switch checked={preview} onChange={setPreview} label="Free preview" description="Anyone can open this before enrolling." />
             </div>

@@ -37,6 +37,13 @@ function itemIssues(item: Item, sectionTitle: string, sectionId: string): Health
     }
     case "DOCUMENT":
       return item.document?.is_uploaded ? [] : [{ ...base, severity: "error", message: `${where}: document upload is incomplete` }];
+    case "SCORM": {
+      const status = item.scorm?.status;
+      if (status === "READY") return [];
+      if (status === "FAILED") return [{ ...base, severity: "error", message: `${where}: the package could not be unpacked — upload a new zip` }];
+      if (status === "PROCESSING") return [{ ...base, severity: "warning", message: `${where}: package is still being unpacked` }];
+      return [{ ...base, severity: "error", message: `${where}: no package uploaded yet` }];
+    }
     case "ASSESSMENT": {
       const a = item.assessment;
       if (!a) return [];

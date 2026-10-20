@@ -13,7 +13,7 @@ import { useCourseEditor } from "../editor/CourseEditorContext";
 
 export type UploadState = {
   itemId: string;
-  kind: "video" | "document";
+  kind: "video" | "document" | "scorm";
   fileName: string;
   progress: number;
   phase: "preparing" | "uploading" | "finalizing" | "error";
@@ -27,6 +27,8 @@ type UploadsValue = {
   startVideo: (itemId: string, file: File, opts?: { credentials?: VideoUploadCredentials | null; title?: string }) => void;
   /** PUT to a signed URL, then finalize the document item. */
   startDocument: (itemId: string, file: File, uploadUrl: string) => Promise<boolean>;
+  /** PUT the package zip to a signed URL, then finalize (validate + unpack) the SCORM item. */
+  startScorm: (itemId: string, file: File, uploadUrl: string) => Promise<boolean>;
   cancel: (itemId: string) => void;
   dismiss: (itemId: string) => void;
   busy: boolean;
@@ -119,6 +121,38 @@ export function UploadsProvider({ children }: { children: React.ReactNode }) {
     [patch, run],
   );
 
+  const startScorm = useCallback<UploadsValue["startScorm"]>(
+    async (itemId, file, uploadUrl) => {
+      patch(itemId, { itemId, kind: "scorm", fileName: file.name, progress: 0, phase: "uploading", error: undefined });
+      try {
+        await uploadToSignedUrl(uploadUrl, file, (p) => patch(itemId, { progress: p }));
+      } catch (err) {
+        patch(itemId, { phase: "error", error: (err as Error).message });
+        toast.error(`Package upload failed: ${file.name}`);
+        return false;
+      }
+      // Finalize validates the zip and unpacks it; a bad package comes back as
+      // a 400 whose message says what to fix.
+      patch(itemId, { phase: "finalizing", progress: 100 });
+      try {
+        await run(
+          async () => {
+            await studioApi.finalizeScorm(itemId, { file_size_bytes: file.size });
+            return true;
+          },
+          { success: "Package uploaded and ready to play", silent: true },
+        );
+      } catch (err) {
+        patch(itemId, { phase: "error", error: (err as Error).message || "We couldn't unpack the package. Try another zip." });
+        toast.error(`Package rejected: ${file.name}`);
+        return false;
+      }
+      patch(itemId, null);
+      return true;
+    },
+    [patch, run],
+  );
+
   const cancel = useCallback(
     (itemId: string) => {
       const u = tusUploads.current[itemId];
@@ -147,11 +181,12 @@ export function UploadsProvider({ children }: { children: React.ReactNode }) {
       get: (id) => uploads[id],
       startVideo,
       startDocument,
+      startScorm,
       cancel,
       dismiss: (id) => patch(id, null),
       busy,
     }),
-    [uploads, startVideo, startDocument, cancel, patch, busy],
+    [uploads, startVideo, startDocument, startScorm, cancel, patch, busy],
   );
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;

@@ -46,6 +46,7 @@ export const ITEM_TYPE_LABELS: Record<ItemType, string> = {
   LINKS: "Link",
   LIVE_SESSION: "Live session",
   ASSESSMENT: "Assessment",
+  SCORM: "Interactive package",
 };
 
 export const ASSESSMENT_TYPE_LABELS: Record<AssessmentType, string> = {

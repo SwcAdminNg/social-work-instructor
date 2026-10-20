@@ -96,6 +96,9 @@ const FIELD_LABELS: Record<string, string> = {
   downloadable: "Downloadable",
   bunny_video_guid: "Video",
   storage_key: "Stored file",
+  extracted_prefix: "Package files",
+  launch_path: "Launch page",
+  completion_from_package: "Completion from package",
 };
 
 export function fieldLabel(field: string) {

@@ -4,6 +4,7 @@ import { useState } from "react";
 import {
   Award,
   BarChart3,
+  Boxes,
   CalendarDays,
   Check,
   ChevronDown,
@@ -89,6 +90,7 @@ const ITEM_ICONS: Record<ItemType, LucideIcon> = {
   LINKS: Link2,
   LIVE_SESSION: CalendarDays,
   ASSESSMENT: ClipboardCheck,
+  SCORM: Boxes,
 };
 
 function itemMinutes(item: PreviewItem) {

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { CalendarDays, ChevronDown, ChevronUp, PlayCircle, FileText, HelpCircle, X, Eye, ExternalLink, Link2 } from "lucide-react";
+import { Boxes, CalendarDays, ChevronDown, ChevronUp, PlayCircle, FileText, HelpCircle, X, Eye, ExternalLink, Link2 } from "lucide-react";
 import { HlsVideoPlayer } from "@/components/learning/HlsVideoPlayer";
 import { QuizEngine } from "@/components/learning/QuizEngine";
 
@@ -91,6 +91,8 @@ export function CourseCurriculum({ courseId, sections }: { courseId?: string; se
         return <PlayCircle className="w-5 h-5 text-gray-500 dark:text-gray-400" />;
       case "DOCUMENT":
         return <FileText className="w-5 h-5 text-gray-500 dark:text-gray-400" />;
+      case "SCORM":
+        return <Boxes className="w-5 h-5 text-gray-500 dark:text-gray-400" />;
       case "LINKS":
         return <Link2 className="w-5 h-5 text-gray-500 dark:text-gray-400" />;
       case "LIVE_SESSION":
