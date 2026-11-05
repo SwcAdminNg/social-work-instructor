@@ -4,9 +4,18 @@ import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
+import { useSession } from "next-auth/react";
 import { Fingerprint, X } from "lucide-react";
 import { IconSpinner } from "@/components/auth/shared/icons";
-import { addPasskey, deviceUnlockAvailable, listPasskeys, type Passkey, PasskeyError, passkeysSupported } from "@/lib/passkeys";
+import {
+  addPasskey,
+  deviceUnlockAvailable,
+  listPasskeys,
+  type Passkey,
+  PasskeyError,
+  passkeysSupported,
+  rememberPasskeyAccount,
+} from "@/lib/passkeys";
 import { PASSKEYS_QUERY_KEY } from "./PasskeySettings";
 
 const DISMISS_KEY = "swcl:passkey-prompt-dismissed";
@@ -19,6 +28,12 @@ const DISMISS_KEY = "swcl:passkey-prompt-dismissed";
 export function PasskeyPrompt() {
   const pathname = usePathname();
   const queryClient = useQueryClient();
+  const { data: authSession } = useSession();
+  const account = {
+    email: authSession?.user?.email,
+    username: (authSession?.user as { username?: string | null } | undefined)?.username,
+    name: authSession?.user?.name,
+  };
   const [visible, setVisible] = useState(false);
   const [busy, setBusy] = useState(false);
 
@@ -48,6 +63,7 @@ export function PasskeyPrompt() {
     try {
       const passkey = await addPasskey();
       queryClient.setQueryData<Passkey[]>(PASSKEYS_QUERY_KEY, (current = []) => [passkey, ...current]);
+      rememberPasskeyAccount(account);
       toast.success("Passkey added. Next time, sign in with your fingerprint or face.");
       dismiss();
     } catch (error) {

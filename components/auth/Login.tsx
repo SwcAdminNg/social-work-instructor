@@ -7,7 +7,7 @@ import Link from "next/link";
 import { AuthPageShell } from "./shared/AuthPageShell";
 import { FloatingInput } from "./shared/FloatingInput";
 import { PasswordToggle } from "./shared/PasswordToggle";
-import { PasskeySignIn } from "./shared/PasskeySignIn";
+import { PasskeyButton, PasskeyContinueCard, usePasskeySignIn } from "./shared/PasskeySignIn";
 import { TwoFactorSetup } from "./TwoFactorSetup";
 import { TwoFactorVerify } from "./TwoFactorVerify";
 import { IconArrowRight, IconCheck, IconLock, IconUser, IconSpinner } from "./shared/icons";
@@ -33,6 +33,16 @@ export default function Login({ statsData }: { statsData?: any }) {
 
   const emailRef = useRef<HTMLInputElement>(null);
   const passwordRef = useRef<HTMLInputElement>(null);
+
+  const passkey = usePasskeySignIn({
+    identifier: email,
+    keepLoggedIn,
+    onError: (message) => setError(message),
+    onSession: async (sessionData) => {
+      setError("");
+      await finalizeSession(sessionData);
+    },
+  });
 
   const finalizeSession = async (sessionData: any) => {
     setFinalizeError("");
@@ -167,6 +177,22 @@ export default function Login({ statsData }: { statsData?: any }) {
       )}
 
       {/* Form */}
+      {passkey.continueAccount && (
+        <>
+          <PasskeyContinueCard
+            account={passkey.continueAccount}
+            busy={passkey.busy}
+            onContinue={() => passkey.start(passkey.continueAccount?.email)}
+            onUseAnother={() => emailRef.current?.focus()}
+          />
+          <div className="flex items-center gap-3 mb-5" aria-hidden="true">
+            <div className="flex-1 h-px bg-gray-200 dark:bg-white/10" />
+            <span className="text-[0.75rem] text-gray-500 font-medium">or sign in with your password</span>
+            <div className="flex-1 h-px bg-gray-200 dark:bg-white/10" />
+          </div>
+        </>
+      )}
+
       <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-4">
         {/* Email or Username */}
         <FloatingInput
@@ -276,22 +302,17 @@ export default function Login({ statsData }: { statsData?: any }) {
         </button>
       </form>
 
-      {/* Passkey */}
-      <div className="flex items-center gap-3 my-5" aria-hidden="true">
-        <div className="flex-1 h-px bg-gray-200 dark:bg-white/10" />
-        <span className="text-[0.75rem] text-gray-500 dark:text-gray-500 font-medium">or</span>
-        <div className="flex-1 h-px bg-gray-200 dark:bg-white/10" />
-      </div>
-      <PasskeySignIn
-        identifier={email}
-        keepLoggedIn={keepLoggedIn}
-        disabled={loading}
-        onError={(message) => setError(message)}
-        onSession={async (sessionData) => {
-          setError("");
-          await finalizeSession(sessionData);
-        }}
-      />
+      {/* Passkey: only when this account can use one */}
+      {passkey.availableForTyped && !passkey.continueAccount && (
+        <>
+          <div className="flex items-center gap-3 my-5" aria-hidden="true">
+            <div className="flex-1 h-px bg-gray-200 dark:bg-white/10" />
+            <span className="text-[0.75rem] text-gray-500 dark:text-gray-500 font-medium">or</span>
+            <div className="flex-1 h-px bg-gray-200 dark:bg-white/10" />
+          </div>
+          <PasskeyButton busy={passkey.busy} disabled={loading} onClick={() => passkey.start(email)} />
+        </>
+      )}
       <div className="my-6" aria-hidden="true" />
 
       {/* Register link */}

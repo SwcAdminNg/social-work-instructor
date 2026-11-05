@@ -3,14 +3,17 @@
 import { useState, useSyncExternalStore } from "react";
 import { toast } from "sonner";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useSession } from "next-auth/react";
 import { Check, Cloud, Fingerprint, KeyRound, Laptop, Pencil, Plus, Trash2, X } from "lucide-react";
 import { IconSpinner } from "@/components/auth/shared/icons";
 import {
   addPasskey,
+  forgetPasskeyAccount,
   listPasskeys,
   type Passkey,
   PasskeyError,
   passkeysSupported,
+  rememberPasskeyAccount,
   removePasskey,
   renamePasskey,
 } from "@/lib/passkeys";
@@ -36,6 +39,12 @@ export const PASSKEYS_QUERY_KEY = ["passkeys"];
 /** Settings card for the signed-in user's passkeys. */
 export function PasskeySettings() {
   const queryClient = useQueryClient();
+  const { data: authSession } = useSession();
+  const account = {
+    email: authSession?.user?.email,
+    username: (authSession?.user as { username?: string | null } | undefined)?.username,
+    name: authSession?.user?.name,
+  };
   const supported = useSyncExternalStore(noopSubscribe, passkeysSupported, () => true);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [draftName, setDraftName] = useState("");
@@ -51,6 +60,8 @@ export function PasskeySettings() {
     mutationFn: () => addPasskey(),
     onSuccess: (passkey) => {
       queryClient.setQueryData<Passkey[]>(PASSKEYS_QUERY_KEY, (current = []) => [passkey, ...current]);
+      // This device now offers "Continue with fingerprint" for this account at sign-in.
+      rememberPasskeyAccount(account);
       toast.success("Passkey added. Next time, sign in with your fingerprint or face.");
     },
     onError: (error: PasskeyError) => {
@@ -71,7 +82,10 @@ export function PasskeySettings() {
   const remove = useMutation({
     mutationFn: (id: string) => removePasskey(id),
     onSuccess: (_, id) => {
-      queryClient.setQueryData<Passkey[]>(PASSKEYS_QUERY_KEY, (current = []) => current.filter((p) => p.id !== id));
+      const remaining = (queryClient.getQueryData<Passkey[]>(PASSKEYS_QUERY_KEY) || []).filter((p) => p.id !== id);
+      queryClient.setQueryData<Passkey[]>(PASSKEYS_QUERY_KEY, remaining);
+      // No passkeys left: stop offering fingerprint sign-in for this account here.
+      if (remaining.length === 0) forgetPasskeyAccount(account.email);
       setConfirmId(null);
       toast.success("Passkey removed. It can no longer be used to sign in.");
     },

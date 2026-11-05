@@ -6,8 +6,8 @@ import { fetchApi, publicFetchApi } from "@/lib/fetchApi";
 // need a signed-in session. The page origin is added server-side so the API can
 // bind each ceremony to this site, and the visitor's browser is passed on so
 // devices get a recognisable name.
-const PUBLIC = new Set(["login/options", "login/verify"]);
-const ALLOWED = /^(|login\/options|login\/verify|register\/options|register\/verify|[0-9a-f-]{36})$/i;
+const PUBLIC = new Set(["login/options", "login/verify", "check"]);
+const ALLOWED = /^(|check|login\/options|login\/verify|register\/options|register\/verify|[0-9a-f-]{36})$/i;
 
 function originOf(req: Request) {
   const header = req.headers.get("origin");
