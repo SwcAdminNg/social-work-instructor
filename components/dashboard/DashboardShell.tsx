@@ -7,6 +7,7 @@ import type { UserAccess } from "@/components/dashboard/instructor/types";
 import { SidebarProvider, useSidebar } from "./SidebarContext";
 import { Sidebar } from "./Sidebar";
 import { DashboardHeader } from "./DashboardHeader";
+import { PasskeyPrompt } from "./PasskeyPrompt";
 import { AccessProvider } from "@/components/studio/AccessContext";
 
 function ProfilePhotoBanner() {
@@ -65,6 +66,7 @@ function Content({
         {showPhotoBanner && <ProfilePhotoBanner />}
         {children}
       </main>
+      <PasskeyPrompt />
     </div>
   );
 }

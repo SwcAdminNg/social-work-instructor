@@ -7,6 +7,7 @@ import Link from "next/link";
 import { AuthPageShell } from "./shared/AuthPageShell";
 import { FloatingInput } from "./shared/FloatingInput";
 import { PasswordToggle } from "./shared/PasswordToggle";
+import { PasskeySignIn } from "./shared/PasskeySignIn";
 import { TwoFactorSetup } from "./TwoFactorSetup";
 import { TwoFactorVerify } from "./TwoFactorVerify";
 import { IconArrowRight, IconCheck, IconLock, IconUser, IconSpinner } from "./shared/icons";
@@ -179,7 +180,7 @@ export default function Login({ statsData }: { statsData?: any }) {
             if (emailError) setEmailError("");
           }}
           icon={<IconUser />}
-          autoComplete="username"
+          autoComplete="username webauthn"
           required
           error={emailError}
         />
@@ -275,14 +276,23 @@ export default function Login({ statsData }: { statsData?: any }) {
         </button>
       </form>
 
-      {/* Divider */}
-      <div className="flex items-center gap-3 my-6" aria-hidden="true">
-        <div className="flex-1 h-px bg-gray-200 dark:bg-white/8" />
-        <span className="text-[0.75rem] text-gray-500 dark:text-gray-600 font-medium">
-          or
-        </span>
-        <div className="flex-1 h-px bg-gray-200 dark:bg-white/8" />
+      {/* Passkey */}
+      <div className="flex items-center gap-3 my-5" aria-hidden="true">
+        <div className="flex-1 h-px bg-gray-200 dark:bg-white/10" />
+        <span className="text-[0.75rem] text-gray-500 dark:text-gray-500 font-medium">or</span>
+        <div className="flex-1 h-px bg-gray-200 dark:bg-white/10" />
       </div>
+      <PasskeySignIn
+        identifier={email}
+        keepLoggedIn={keepLoggedIn}
+        disabled={loading}
+        onError={(message) => setError(message)}
+        onSession={async (sessionData) => {
+          setError("");
+          await finalizeSession(sessionData);
+        }}
+      />
+      <div className="my-6" aria-hidden="true" />
 
       {/* Register link */}
       <p className="text-center text-[0.85rem] text-gray-500 dark:text-gray-400">
