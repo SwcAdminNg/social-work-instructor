@@ -7,7 +7,10 @@ type Theme = "light" | "dark";
 const ThemeContext = createContext<{
   theme: Theme;
   toggle: () => void;
-}>({ theme: "light", toggle: () => {} });
+  /** True while a page header renders its own theme switch. */
+  headerToggle: boolean;
+  setHeaderToggle: (present: boolean) => void;
+}>({ theme: "light", toggle: () => {}, headerToggle: false, setHeaderToggle: () => {} });
 
 export function useTheme() {
   return useContext(ThemeContext);
@@ -19,6 +22,7 @@ export default function ThemeProvider({
   children: React.ReactNode;
 }) {
   const [theme, setTheme] = useState<Theme>("light");
+  const [headerToggle, setHeaderToggle] = useState(false);
 
   // On mount: read saved preference or system preference
   useEffect(() => {
@@ -44,7 +48,7 @@ export default function ThemeProvider({
   const toggle = () => setTheme((t) => (t === "dark" ? "light" : "dark"));
 
   return (
-    <ThemeContext.Provider value={{ theme, toggle }}>
+    <ThemeContext.Provider value={{ theme, toggle, headerToggle, setHeaderToggle }}>
       {children}
     </ThemeContext.Provider>
   );

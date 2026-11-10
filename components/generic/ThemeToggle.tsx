@@ -1,14 +1,24 @@
 "use client";
 
+import { useSyncExternalStore } from "react";
 import { usePathname } from "next/navigation";
 import { useTheme } from "./ThemeProvider";
 
+const noopSubscribe = () => () => {};
+
+/**
+ * Floating theme switch for pages without the site header (sign-in,
+ * learning player and similar). Pages with the site header show the
+ * switch inside the header instead.
+ */
 export default function ThemeToggle() {
-  const { theme, toggle } = useTheme();
+  const { theme, toggle, headerToggle } = useTheme();
   const pathname = usePathname();
+  // False during server rendering and hydration, true afterwards.
+  const mounted = useSyncExternalStore(noopSubscribe, () => true, () => false);
   const isDark = theme === "dark";
 
-  if (pathname.startsWith("/dashboard")) {
+  if (!mounted || headerToggle || pathname.startsWith("/dashboard")) {
     return null;
   }
 

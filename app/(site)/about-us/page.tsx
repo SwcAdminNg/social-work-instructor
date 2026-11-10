@@ -1,18 +1,18 @@
-import { AboutHero } from "@/components/about/AboutHero";
-import { AboutIntro } from "@/components/about/AboutIntro";
-import { AboutWhy } from "@/components/about/AboutWhy";
+import type { Metadata } from "next";
+import About from "@/components/about/About";
+import { JsonLd, pageJsonLd, pageMetadata } from "@/lib/site";
 
-export const metadata = {
-  title: "About Us | Social Work Nigeria",
-  description: "Learn more about Social Work Nigeria and our mission.",
-};
+const title = "About Us | Social Work Nigeria Instructors";
+const description =
+  "The instructor platform of Social Work Consultancy Ltd, where practice-led social work courses for learners in Nigeria and the Global South are built, reviewed and taught.";
+
+export const metadata: Metadata = pageMetadata({ title, description, path: "/about-us" });
 
 export default function AboutUsPage() {
   return (
-    <div className="w-full bg-white dark:bg-gray-950 flex flex-col">
-      <AboutHero />
-      <AboutIntro />
-      <AboutWhy />
-    </div>
+    <>
+      <JsonLd data={pageJsonLd({ type: "AboutPage", path: "/about-us", name: title, description, crumbs: [{ name: "About Us", path: "/about-us" }] })} />
+      <About />
+    </>
   );
 }

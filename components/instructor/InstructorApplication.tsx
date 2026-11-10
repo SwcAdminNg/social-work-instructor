@@ -129,16 +129,16 @@ export default function InstructorApplication() {
     return (
       <AuthPageShell variant="register">
         <div className="mb-8">
-          <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-[#2D6A4F]/10 text-[#2D6A4F] dark:bg-[#52b788]/10 dark:text-[#52b788]">
+          <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-[#2D6A4F]/10 text-[#2D6A4F] dark:bg-[#52b788]/10 dark:text-[#52b788]">
             <UploadCloud className="h-6 w-6" />
           </div>
-          <p className="mb-2 text-[0.7rem] font-bold uppercase tracking-[0.2em] text-[#2D6A4F] dark:text-[#52b788]">
+          <p className="sw-eyebrow text-accent mb-4">
             Application submitted
           </p>
-          <h1 className="mb-3 text-[1.75rem] font-extrabold leading-tight tracking-tight text-gray-900 dark:text-white sm:text-[2rem]">
+          <h1 className="sw-display text-[2.1rem] sm:text-[2.6rem] text-ink mb-3">
             Thanks for applying
           </h1>
-          <p className="text-[0.9rem] leading-6 text-gray-500 dark:text-gray-400">
+          <p className="text-[0.98rem] leading-relaxed text-ink-2">
             Your instructor application and CV have been submitted. Our team will
             review it and email you with the next step. If approved, that email
             will include a setup link for your instructor account.
@@ -146,7 +146,7 @@ export default function InstructorApplication() {
         </div>
         <Link
           href="/login"
-          className="inline-flex h-12 w-full items-center justify-center rounded-xl bg-[#2D6A4F] px-5 text-sm font-bold text-white no-underline transition hover:bg-[#1e4d38]"
+          className="inline-flex h-[56px] w-full items-center justify-center rounded-full bg-[#14402F] px-5 text-[0.98rem] font-semibold text-white no-underline transition hover:bg-[#0c2a1e] dark:bg-[#2D6A4F] dark:hover:bg-[#3d8c68]"
         >
           Back to sign in
         </Link>
@@ -157,20 +157,20 @@ export default function InstructorApplication() {
   return (
     <AuthPageShell variant="register">
       <div className="mb-8">
-        <p className="mb-2 text-[0.7rem] font-bold uppercase tracking-[0.2em] text-[#2D6A4F] dark:text-[#52b788]">
+        <p className="sw-eyebrow text-accent mb-4">
           Become an instructor
         </p>
-        <h1 className="mb-2 text-[1.75rem] font-extrabold leading-tight tracking-tight text-gray-900 dark:text-white sm:text-[2rem]">
+        <h1 className="sw-display text-[2.1rem] sm:text-[2.6rem] text-ink mb-3">
           Submit your application
         </h1>
-        <p className="text-[0.87rem] leading-6 text-gray-500 dark:text-gray-400">
+        <p className="text-[0.98rem] leading-relaxed text-ink-2">
           Apply with your contact details and CV. If approved, you will receive
           an emailed link to finish setting up your instructor account.
         </p>
       </div>
 
       {error && (
-        <div role="alert" className="mb-4 rounded-xl border border-red-200 bg-red-50 p-3 text-sm font-medium text-red-600 dark:border-red-500/20 dark:bg-red-500/10 dark:text-red-400">
+        <div role="alert" className="mb-4 rounded-2xl border border-red-200 bg-red-50 p-3 text-sm font-medium text-red-600 dark:border-red-500/20 dark:bg-red-500/10 dark:text-red-400">
           {error}
         </div>
       )}
@@ -244,7 +244,7 @@ export default function InstructorApplication() {
         <div>
           <label
             htmlFor="cv"
-            className="flex cursor-pointer items-center gap-3 rounded-xl border-2 border-dashed border-gray-200 bg-gray-50 p-4 transition hover:border-[#2D6A4F] dark:border-white/10 dark:bg-white/5 dark:hover:border-[#52b788]"
+            className="flex cursor-pointer items-center gap-3 rounded-2xl border-2 border-dashed border-line bg-card p-4 transition hover:border-[#2D6A4F] dark:border-white/10 dark:bg-white/5 dark:hover:border-[#52b788]"
           >
             <span className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-[#2D6A4F]/10 text-[#2D6A4F] dark:bg-[#52b788]/10 dark:text-[#52b788]">
               <FileText className="h-5 w-5" />
@@ -279,7 +279,7 @@ export default function InstructorApplication() {
         <button
           type="submit"
           disabled={loading}
-          className="relative mt-2 flex h-[52px] w-full items-center justify-center gap-2 rounded-xl bg-[#2D6A4F] text-[0.93rem] font-bold text-white shadow-lg shadow-green-900/20 transition-all duration-200 hover:-translate-y-0.5 hover:bg-[#1e4d38] hover:shadow-green-900/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2D6A4F] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-70 disabled:hover:translate-y-0"
+          className="relative mt-2 flex h-[56px] w-full items-center justify-center gap-2 rounded-full bg-[#14402F] dark:bg-[#2D6A4F] text-[0.98rem] font-semibold text-white shadow-lg shadow-green-900/20 transition-all duration-200 hover:-translate-y-0.5 hover:bg-[#0c2a1e] dark:hover:bg-[#3d8c68] hover:shadow-green-900/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2D6A4F] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-70 disabled:hover:translate-y-0"
         >
           {loading ? (
             <>
@@ -295,7 +295,7 @@ export default function InstructorApplication() {
         </button>
       </form>
 
-      <p className="mt-6 text-center text-[0.85rem] text-gray-500 dark:text-gray-400">
+      <p className="mt-6 text-center text-[0.92rem] text-ink-2">
         Already approved or have an account?{" "}
         <Link
           href="/login"

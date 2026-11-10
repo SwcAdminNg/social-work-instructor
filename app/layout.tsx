@@ -21,6 +21,7 @@ const jakarta = Plus_Jakarta_Sans({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(process.env.NEXT_PUBLIC_BASE_URL || "https://socialworknigeria.org"),
   title: "Social Work Nigeria Instructors",
   description: "Instructor platform for Social Work Nigeria",
 };

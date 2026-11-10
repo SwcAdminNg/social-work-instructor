@@ -179,17 +179,17 @@ export function TwoFactorSetup({
   return (
     <div>
       <div className="mb-8">
-        <div className="w-11 h-11 rounded-xl bg-[#2D6A4F]/10 dark:bg-[#52b788]/10 flex items-center justify-center mb-4">
+        <div className="w-11 h-11 rounded-2xl bg-[#2D6A4F]/10 dark:bg-[#52b788]/10 flex items-center justify-center mb-4">
           <ShieldCheck className="w-5 h-5 text-[#2D6A4F] dark:text-[#52b788]" />
         </div>
         <h1
           ref={headingRef}
           tabIndex={-1}
-          className="text-[1.5rem] font-extrabold text-gray-900 dark:text-white tracking-tight leading-tight mb-2 outline-none"
+          className="sw-display text-[1.9rem] text-ink mb-2 outline-none"
         >
           {step === "choice" ? title : "Enter verification code"}
         </h1>
-        <p className="text-[0.87rem] text-gray-500 dark:text-gray-400">
+        <p className="text-[0.98rem] text-ink-2">
           {step === "choice"
             ? description
             : step === "totp"
@@ -199,7 +199,7 @@ export function TwoFactorSetup({
       </div>
 
       {error && (
-        <div role="alert" aria-live="assertive" className="mb-4 p-3 rounded-xl bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/20 text-red-600 dark:text-red-400 text-sm font-medium">
+        <div role="alert" aria-live="assertive" className="mb-4 p-3 rounded-2xl bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/20 text-red-600 dark:text-red-400 text-sm font-medium">
           {error}
         </div>
       )}
@@ -210,7 +210,7 @@ export function TwoFactorSetup({
             type="button"
             disabled={loading || currentMethod === "TOTP"}
             onClick={() => selectMethod("TOTP")}
-            className="group flex items-center gap-4 p-4 rounded-xl border-2 border-gray-200 dark:border-white/10 hover:border-[#2D6A4F] dark:hover:border-[#52b788] bg-white dark:bg-white/5 text-left transition-all duration-150 disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:border-gray-200 dark:disabled:hover:border-white/10"
+            className="group flex items-center gap-4 p-4 rounded-2xl border-2 border-gray-200 dark:border-white/10 hover:border-[#2D6A4F] dark:hover:border-[#52b788] bg-white dark:bg-white/5 text-left transition-all duration-150 disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:border-gray-200 dark:disabled:hover:border-white/10"
           >
             <div className="w-10 h-10 rounded-lg bg-[#2D6A4F]/10 dark:bg-[#52b788]/10 flex items-center justify-center flex-shrink-0">
               <Smartphone className="w-5 h-5 text-[#2D6A4F] dark:text-[#52b788]" />
@@ -239,7 +239,7 @@ export function TwoFactorSetup({
             type="button"
             disabled={loading || currentMethod === "EMAIL"}
             onClick={() => selectMethod("EMAIL")}
-            className="group flex items-center gap-4 p-4 rounded-xl border-2 border-gray-200 dark:border-white/10 hover:border-[#2D6A4F] dark:hover:border-[#52b788] bg-white dark:bg-white/5 text-left transition-all duration-150 disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:border-gray-200 dark:disabled:hover:border-white/10"
+            className="group flex items-center gap-4 p-4 rounded-2xl border-2 border-gray-200 dark:border-white/10 hover:border-[#2D6A4F] dark:hover:border-[#52b788] bg-white dark:bg-white/5 text-left transition-all duration-150 disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:border-gray-200 dark:disabled:hover:border-white/10"
           >
             <div className="w-10 h-10 rounded-lg bg-[#2D6A4F]/10 dark:bg-[#52b788]/10 flex items-center justify-center flex-shrink-0">
               <Mail className="w-5 h-5 text-[#2D6A4F] dark:text-[#52b788]" />
@@ -278,7 +278,7 @@ export function TwoFactorSetup({
             <button
               type="button"
               onClick={copySecret}
-              className="w-full flex items-center justify-between gap-2 px-4 py-3 rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 hover:border-[#2D6A4F] dark:hover:border-[#52b788] transition-colors duration-150"
+              className="w-full flex items-center justify-between gap-2 px-4 py-3 rounded-2xl bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 hover:border-[#2D6A4F] dark:hover:border-[#52b788] transition-colors duration-150"
             >
               <span className="font-mono text-[0.8rem] text-gray-800 dark:text-gray-200 break-all text-left">
                 {totpSecret}
@@ -375,7 +375,7 @@ export function TwoFactorSetup({
           <Dialog.Overlay className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
           <Dialog.Content className="fixed left-[50%] top-[50%] z-50 grid w-[calc(100%-2rem)] max-w-sm translate-x-[-50%] translate-y-[-50%] gap-4 border border-gray-200 dark:border-gray-800 bg-white dark:bg-[#121212] p-6 shadow-2xl duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 rounded-2xl">
             <div className="flex items-start gap-3">
-              <div className="w-10 h-10 rounded-xl bg-amber-50 dark:bg-amber-500/10 flex items-center justify-center flex-shrink-0">
+              <div className="w-10 h-10 rounded-2xl bg-amber-50 dark:bg-amber-500/10 flex items-center justify-center flex-shrink-0">
                 <TriangleAlert className="w-5 h-5 text-amber-500" />
               </div>
               <div className="flex-1 min-w-0">
@@ -394,7 +394,7 @@ export function TwoFactorSetup({
               <Dialog.Close asChild>
                 <button
                   type="button"
-                  className="inline-flex h-10 items-center justify-center rounded-xl bg-gray-100 dark:bg-gray-800 px-4 text-sm font-semibold text-gray-900 dark:text-gray-100 transition-colors hover:bg-gray-200 dark:hover:bg-gray-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-400"
+                  className="inline-flex h-10 items-center justify-center rounded-2xl bg-gray-100 dark:bg-gray-800 px-4 text-sm font-semibold text-gray-900 dark:text-gray-100 transition-colors hover:bg-gray-200 dark:hover:bg-gray-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-400"
                 >
                   Cancel
                 </button>
@@ -406,7 +406,7 @@ export function TwoFactorSetup({
                   setPendingMethod(null);
                   if (method) choose(method);
                 }}
-                className="inline-flex h-10 items-center justify-center rounded-xl bg-[#2D6A4F] px-4 text-sm font-semibold text-white transition-colors hover:bg-[#1B4332] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2D6A4F] shadow-sm"
+                className="inline-flex h-10 items-center justify-center rounded-2xl bg-[#2D6A4F] px-4 text-sm font-semibold text-white transition-colors hover:bg-[#1B4332] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2D6A4F] shadow-sm"
               >
                 Switch method
               </button>

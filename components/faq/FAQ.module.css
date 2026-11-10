@@ -1,0 +1,105 @@
+/* FAQ page. Palette, search field, chips, states and closing band come from the
+   Resources library styles applied to the same root. */
+.page { isolation: isolate; }
+
+/* The opening (heading and search) is the shared PageHero. */
+.body { padding-block: clamp(48px, 6vw, 80px) clamp(64px, 8vw, 110px); }
+/* Layout: filters above the answers on phones and tablets, a sticky sidebar beside them on desktop. */
+.layout { display: grid; gap: 4px; min-width: 0; }
+.sidebar { min-width: 0; }
+.content { min-width: 0; }
+.sideLabel { display: none; margin-bottom: 10px !important; color: var(--muted); font-size: 0.76rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; }
+@media (min-width: 1024px) {
+  .layout { grid-template-columns: 250px minmax(0, 780px); gap: clamp(32px, 4vw, 56px); justify-content: center; align-items: start; }
+  .sidebar { position: sticky; top: 100px; display: grid; gap: 24px; }
+  .sideLabel { display: block; }
+}
+
+.controls { margin-bottom: 14px; min-width: 0; }
+@media (min-width: 1024px) { .controls { margin-bottom: 0; } }
+/* Full width on phones so the three options always fit; compact pill from tablets up. */
+.segmented { display: flex; gap: 4px; width: 100%; padding: 4px; border-radius: 999px; background: var(--card); border: 1px solid var(--line); }
+@media (min-width: 600px) and (max-width: 1023px) { .segmented { display: inline-flex; width: auto; } }
+@media (min-width: 1024px) { .segmented { flex-direction: column; border-radius: 16px; } }
+.segment {
+  flex: 1 1 auto; min-width: 0; min-height: 44px; padding: 8px 10px; border: 0; border-radius: 999px; background: transparent;
+  white-space: nowrap;
+  color: var(--muted); font: inherit; font-size: 0.92rem; font-weight: 600; cursor: pointer;
+  transition: background-color 0.2s, color 0.2s;
+}
+@media (min-width: 600px) { .segment { flex: 0 0 auto; padding: 8px 18px; } }
+@media (min-width: 1024px) { .segment { flex: none; text-align: left; border-radius: 12px; } }
+.segment[aria-pressed="true"] { background: var(--green); color: #fff; }
+:global(.dark) .segment[aria-pressed="true"] { background: #2d6a4f; }
+.chips {
+  display: flex; gap: 8px; margin: 0 calc(-1 * var(--gutter)) 18px; padding: 2px var(--gutter) 6px; list-style: none;
+  overflow-x: auto; scroll-snap-type: x proximity; scrollbar-width: none; overscroll-behavior-x: contain;
+  -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 var(--gutter), #000 calc(100% - var(--gutter)), transparent 100%);
+          mask-image: linear-gradient(90deg, transparent 0, #000 var(--gutter), #000 calc(100% - var(--gutter)), transparent 100%);
+}
+.chips::-webkit-scrollbar { display: none; }
+.chips li { flex: none; scroll-snap-align: start; }
+@media (min-width: 600px) {
+  .chips { flex-wrap: wrap; overflow: visible; margin: 0 0 22px; padding: 0; -webkit-mask-image: none; mask-image: none; }
+}
+@media (min-width: 1024px) {
+  .chips { flex-direction: column; flex-wrap: nowrap; gap: 6px; margin: 0; }
+  .chips li { width: 100%; }
+  .chips .chip { width: 100%; justify-content: space-between; border-radius: 12px; }
+}
+.chip {
+  display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 8px 16px; white-space: nowrap; text-align: left;
+  border: 1.5px solid var(--field-line); border-radius: 999px; background: var(--field); color: var(--ink);
+  font: inherit; font-size: 0.92rem; font-weight: 500; cursor: pointer; transition: border-color 0.2s, background-color 0.2s;
+}
+.chip:hover { border-color: var(--sw-ink); }
+.chip[aria-pressed="true"] { background: var(--chip-on-bg); border-color: var(--chip-on-bg); color: var(--chip-on-ink); font-weight: 600; }
+.chipCount { color: var(--muted); font-size: 0.8rem; font-variant-numeric: tabular-nums; }
+.chip[aria-pressed="true"] .chipCount { color: inherit; opacity: 0.75; }
+
+.listHead { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 16px; margin-bottom: 12px; color: var(--muted); font-size: 0.92rem; }
+.textButton { min-height: 40px; padding: 6px 10px; border: 0; border-radius: 10px; background: transparent; color: var(--link); font: inherit; font-size: 0.9rem; font-weight: 600; cursor: pointer; }
+.textButton:hover { background: color-mix(in srgb, var(--gold) 12%, transparent); }
+
+.list { display: grid; gap: 10px; margin: 0; padding: 0; list-style: none; }
+.item { border: 1px solid var(--line); border-radius: 24px; background: var(--card); scroll-margin-top: 110px; transition: border-color 0.3s, box-shadow 0.3s; }
+.itemOpen { border-color: color-mix(in srgb, var(--gold) 55%, var(--line)); box-shadow: var(--shadow); }
+.page .question { margin: 0; font-size: inherit; font-family: inherit; font-variation-settings: normal; }
+.trigger {
+  display: flex; align-items: center; justify-content: space-between; gap: 16px; width: 100%; min-height: 60px;
+  padding: 18px 22px; overflow-wrap: anywhere; border: 0; border-radius: 24px; background: transparent; color: var(--heading);
+  font: inherit; font-size: clamp(1.02rem, 0.98rem + 0.2vw, 1.12rem); font-weight: 600; letter-spacing: 0; text-align: left; cursor: pointer;
+}
+.triggerIcon { display: grid; place-items: center; flex: none; width: 40px; height: 40px; border-radius: 50%; background: var(--icon-bg); color: var(--icon-ink); transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1), background-color 0.3s, color 0.3s; }
+.itemOpen .triggerIcon { transform: rotate(45deg); background: var(--sw-gold); color: #10231a; }
+.category { display: block; margin-bottom: 3px; color: var(--muted); font-size: 0.76rem; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; }
+.panel { display: grid; grid-template-rows: 0fr; transition: grid-template-rows 0.3s ease; }
+.itemOpen .panel { grid-template-rows: 1fr; }
+.panelInner { overflow: hidden; }
+.answer { overflow-wrap: anywhere; padding: 0 20px 20px; color: var(--muted); line-height: 1.65; white-space: pre-line; }
+.itemFoot { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; margin: 0 20px; padding: 14px 0 18px; border-top: 1px solid var(--line); font-size: 0.9rem; }
+.itemFoot a, .itemFoot button { color: var(--link); font-weight: 600; }
+.related { margin: 0 20px 18px; }
+.related p { margin-bottom: 6px !important; color: var(--ink); font-size: 0.88rem; font-weight: 600; }
+.related ul { display: grid; gap: 4px; margin: 0; padding: 0; list-style: none; }
+.related button { padding: 6px 0; border: 0; background: none; color: var(--link); font: inherit; font-size: 0.92rem; text-align: left; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+.copied { color: var(--muted); font-size: 0.85rem; }
+.page mark { background: color-mix(in srgb, var(--gold) 35%, transparent); color: inherit; border-radius: 3px; padding: 0 2px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .panel, .triggerIcon, .segment, .chip { transition: none; }
+}
+
+/* Small phones: tighter spacing so answers keep a comfortable line length. */
+@media (max-width: 379px) {
+  .segment { padding: 8px 6px; font-size: 0.86rem; }
+}
+@media (max-width: 479px) {
+  .trigger { gap: 12px; padding: 14px 14px 14px 16px; }
+  .triggerIcon { width: 30px; height: 30px; }
+  .answer { padding: 0 16px 16px; }
+  .related { margin: 0 16px 16px; }
+  .itemFoot { flex-direction: column; align-items: flex-start; gap: 4px; margin: 0 16px; padding: 10px 0 14px; }
+  .itemFoot a { margin-left: 0 !important; min-height: 40px; display: inline-flex; align-items: center; }
+  .listHead { font-size: 0.88rem; }
+}

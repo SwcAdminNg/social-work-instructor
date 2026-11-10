@@ -2,6 +2,8 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   images: {
+    // 90 is used for the public-site photographs, so they stay sharp.
+    qualities: [75, 90],
     remotePatterns: [
       {
         protocol: "https",

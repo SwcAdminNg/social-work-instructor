@@ -1,17 +1,11 @@
-"use client";
-
+import Image from "next/image";
 import Link from "next/link";
 import { Mail, MapPin, Phone } from "lucide-react";
+import { Btn, Contours, Heading } from "@/components/site/ui";
 
 function IconFacebook() {
   return (
-    <svg
-      width="18"
-      height="18"
-      viewBox="0 0 24 24"
-      fill="currentColor"
-      aria-hidden="true"
-    >
+    <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
       <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z" />
     </svg>
   );
@@ -19,13 +13,7 @@ function IconFacebook() {
 
 function IconTwitterX() {
   return (
-    <svg
-      width="16"
-      height="16"
-      viewBox="0 0 24 24"
-      fill="currentColor"
-      aria-hidden="true"
-    >
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
       <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
     </svg>
   );
@@ -33,13 +21,7 @@ function IconTwitterX() {
 
 function IconLinkedIn() {
   return (
-    <svg
-      width="18"
-      height="18"
-      viewBox="0 0 24 24"
-      fill="currentColor"
-      aria-hidden="true"
-    >
+    <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
       <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6zM2 9h4v12H2z" />
       <circle cx="4" cy="4" r="2" />
     </svg>
@@ -47,9 +29,10 @@ function IconLinkedIn() {
 }
 
 const platformLinks = [
-  { label: "Dashboard", href: "/dashboard" },
-  { label: "Community", href: "/dashboard/community" },
-  { label: "Profile Settings", href: "/dashboard/settings" },
+  { label: "Why Teach", href: "/why-teach" },
+  { label: "How It Works", href: "/how-it-works" },
+  { label: "Apply to Teach", href: "/register" },
+  { label: "Instructor Sign In", href: "/login" },
 ];
 
 const companyLinks = [
@@ -65,37 +48,27 @@ const socialLinks = [
 ];
 
 const contactItems = [
-  {
-    icon: <MapPin className="w-4 h-4" />,
-    label: "Address",
-    value: "Flat C3, Okonkwo Estate, Jos, Plateau State.",
-    href: undefined,
-  },
-  {
-    icon: <Phone className="w-4 h-4" />,
-    label: "Phone",
-    value: "+2348034471063",
-    href: "tel:+2348034471063",
-  },
-  {
-    icon: <Mail className="w-4 h-4" />,
-    label: "Email",
-    value: "support@socialworknigeria.org",
-    href: "mailto:support@socialworknigeria.org",
-  },
+  { icon: MapPin, label: "Address", value: "Flat C3, Okonkwo Estate, Jos, Plateau State.", href: undefined },
+  { icon: Phone, label: "Phone", value: "+234 803 447 1063", href: "tel:+2348034471063" },
+  { icon: Mail, label: "Email", value: "support@socialworknigeria.org", href: "mailto:support@socialworknigeria.org" },
 ];
 
-function SectionLabel({ children }: { children: React.ReactNode }) {
+function ColumnLabel({ children }: { children: React.ReactNode }) {
+  return <h2 className="sw-cap m-0 mb-5 text-gold-light">{children}</h2>;
+}
+
+const linkClass =
+  "group inline-flex items-center gap-2 text-[0.98rem] text-white/75 no-underline transition-colors duration-300 hover:text-white";
+
+function FooterLink({ href, label }: { href: string; label: string }) {
   return (
-    <div className="flex items-center gap-2.5 mb-6">
+    <Link href={href} className={linkClass}>
       <span
-        className="w-4 h-px bg-[#2D6A4F] dark:bg-[#52b788]"
         aria-hidden="true"
+        className="h-px w-0 bg-gold transition-[width] duration-500 ease-sw group-hover:w-4"
       />
-      <span className="text-xs font-bold uppercase tracking-[0.15em] text-[#2D6A4F] dark:text-[#52b788]">
-        {children}
-      </span>
-    </div>
+      {label}
+    </Link>
   );
 }
 
@@ -103,141 +76,130 @@ export default function Footer() {
   const year = new Date().getFullYear();
 
   return (
-    <footer
-      className="relative bg-white dark:bg-[#060f0a] border-t border-gray-100 dark:border-gray-900 overflow-hidden"
-      aria-label="Site footer"
-    >
-      {/* Decorative Blur Blob */}
+    <footer className="relative bg-paper px-2.5 pb-2.5 sm:px-5 sm:pb-5" aria-label="Site footer">
       <div
-        className="absolute bottom-0 right-0 w-[500px] h-[500px] rounded-full bg-[#2D6A4F]/5 dark:bg-[#2D6A4F]/10 blur-[120px] pointer-events-none"
-        aria-hidden="true"
-      />
+        className="sw-on-dark sw-grain relative overflow-hidden rounded-[32px] bg-forest md:rounded-[48px]"
+        data-progress="view"
+        data-nav-bg="#0c2a1e"
+      >
+        <Contours className="text-leaf" />
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute -right-40 -top-40 h-[520px] w-[520px] rounded-full bg-clay/20 blur-[140px]"
+        />
 
-      <div className="relative z-10 max-w-7xl mx-auto px-6 py-16 md:py-24">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-8">
-          {/* ── Column 1: Brand ── */}
-          <div className="flex flex-col gap-6 pr-4">
-            <Link
-              href="/"
-              className="flex items-center gap-3 no-underline w-fit group"
-              aria-label="Social Work Nigeria home"
-            >
-              <img
-                src="/images/logo/swc-dark-logo.png"
-                alt="SWC Logo"
-                width={151}
-                height={40}
-                className="w-[170px] md:w-[180px] h-auto object-contain"
-              />
-            </Link>
-
-            <p className="text-sm text-gray-500 dark:text-gray-400 leading-relaxed max-w-xs">
-              Strengthening ethical, skilled, and accountable social work
-              practice across Nigeria through structured, practice-led
-              instructor collaboration and professional community.
-            </p>
-
-            <div className="flex items-center gap-3 pt-2">
-              {socialLinks.map(({ label, href, icon }) => (
-                <Link
-                  key={label}
-                  href={href}
-                  aria-label={label}
-                  className="w-10 h-10 flex items-center justify-center rounded-xl bg-gray-50 dark:bg-gray-900 text-gray-500 dark:text-gray-400 hover:text-white dark:hover:text-white hover:bg-[#2D6A4F] dark:hover:bg-[#52b788] transition-all duration-300 no-underline"
-                >
-                  {icon}
-                </Link>
-              ))}
+        <div className="sw-wrap relative pb-10 pt-16 md:pt-24">
+          {/* Closing statement */}
+          <div className="flex flex-col gap-10 border-b border-white/10 pb-14 md:pb-20 lg:flex-row lg:items-end lg:justify-between">
+            <Heading
+              as="p"
+              text="Teach what you know from *practice.*"
+              accent="text-gold-light"
+              className="sw-display m-0 max-w-[13ch] text-[clamp(2.5rem,6.4vw,5.25rem)]"
+            />
+            <div className="flex max-w-md flex-col gap-6" data-reveal>
+              <p className="sw-lead m-0 text-white/70">
+                Share your experience with social workers across Nigeria. Build a course, have it reviewed
+                and teach it on the Social Work Nigeria learning platform.
+              </p>
+              <div className="flex flex-wrap gap-3">
+                <Btn href="/register" variant="gold">Apply to Teach</Btn>
+                <Btn href="/contact" variant="ghost">Contact Us</Btn>
+              </div>
             </div>
           </div>
 
-          {/* ── Column 2: Platform Links ── */}
-          <div>
-            <SectionLabel>Platform</SectionLabel>
-            <ul className="flex flex-col gap-3" role="list">
-              {platformLinks.map(({ label, href }) => (
-                <li key={label}>
-                  <Link
-                    href={href}
-                    className="text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-[#2D6A4F] dark:hover:text-[#52b788] transition-colors duration-200"
-                  >
-                    {label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
+          {/* Columns */}
+          <div className="grid grid-cols-2 gap-x-8 gap-y-12 py-14 md:py-16 lg:grid-cols-[1.3fr_0.8fr_0.8fr_1.3fr]">
+            <div className="col-span-2 flex flex-col gap-6 lg:col-span-1" data-reveal>
+              <Link href="/" className="w-fit rounded-md no-underline" aria-label="Social Work Nigeria home">
+                <Image
+                  src="/images/logo/swc-logo-on-dark.webp"
+                  alt="Social Work Consultancy Ltd"
+                  width={480}
+                  height={133}
+                  sizes="180px"
+                  className="h-auto w-[164px] object-contain md:w-[180px]"
+                />
+              </Link>
+              <p className="m-0 max-w-xs text-sm leading-relaxed text-white/60">
+                The instructor platform of Social Work Consultancy Ltd, where courses for Socialworknigeria.org are built and taught.
+              </p>
+              <ul className="m-0 flex list-none items-center gap-2.5 p-0">
+                {socialLinks.map(({ label, href, icon }) => (
+                  <li key={label}>
+                    <Link
+                      href={href}
+                      aria-label={label}
+                      className="grid h-11 w-11 place-items-center rounded-full border border-white/15 text-white/75 no-underline transition-all duration-500 ease-sw hover:-translate-y-1 hover:border-gold hover:bg-gold hover:text-[#10231a]"
+                    >
+                      {icon}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
 
-          {/* ── Column 3: Company Links ── */}
-          <div>
-            <SectionLabel>Company</SectionLabel>
-            <ul className="flex flex-col gap-3" role="list">
-              {companyLinks.map(({ label, href }) => (
-                <li key={label}>
-                  <Link
-                    href={href}
-                    className="text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-[#2D6A4F] dark:hover:text-[#52b788] transition-colors duration-200"
-                  >
-                    {label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
+            <nav aria-label="Platform" data-reveal style={{ "--d": "0.08s" } as React.CSSProperties}>
+              <ColumnLabel>Platform</ColumnLabel>
+              <ul className="m-0 flex list-none flex-col gap-3.5 p-0">
+                {platformLinks.map((link) => (
+                  <li key={link.href}><FooterLink {...link} /></li>
+                ))}
+              </ul>
+            </nav>
 
-          {/* ── Column 4: Contact ── */}
-          <div>
-            <SectionLabel>Contact</SectionLabel>
-            <ul className="flex flex-col gap-5" role="list">
-              {contactItems.map(({ icon, label, value, href }) => (
-                <li key={label} className="flex items-start gap-3 group">
-                  <span className="mt-0.5 flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-xl bg-gray-50 dark:bg-gray-900 text-[#2D6A4F] dark:text-[#52b788] group-hover:bg-[#2D6A4F] group-hover:text-white transition-colors duration-300">
-                    {icon}
-                  </span>
-                  <div className="flex flex-col">
-                    <span className="text-[0.65rem] uppercase tracking-widest text-gray-400 dark:text-gray-500 font-bold mb-0.5">
-                      {label}
+            <nav aria-label="Company" data-reveal style={{ "--d": "0.16s" } as React.CSSProperties}>
+              <ColumnLabel>Company</ColumnLabel>
+              <ul className="m-0 flex list-none flex-col gap-3.5 p-0">
+                {companyLinks.map((link) => (
+                  <li key={link.href}><FooterLink {...link} /></li>
+                ))}
+              </ul>
+            </nav>
+
+            <div className="col-span-2 lg:col-span-1" data-reveal style={{ "--d": "0.24s" } as React.CSSProperties}>
+              <ColumnLabel>Contact</ColumnLabel>
+              <ul className="m-0 flex list-none flex-col gap-4 p-0">
+                {contactItems.map(({ icon: Icon, label, value, href }) => (
+                  <li key={label} className="flex items-start gap-3.5">
+                    <span className="mt-0.5 grid h-9 w-9 flex-none place-items-center rounded-full bg-white/[0.07] text-gold-light">
+                      <Icon className="h-4 w-4" aria-hidden="true" />
                     </span>
-                    {href ? (
-                      <a
-                        href={href}
-                        className="text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-[#2D6A4F] dark:hover:text-[#52b788] transition-colors duration-200"
-                      >
-                        {value}
-                      </a>
-                    ) : (
-                      <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                        {value}
-                      </span>
-                    )}
-                  </div>
-                </li>
-              ))}
-            </ul>
+                    <div className="flex min-w-0 flex-col">
+                      <span className="sw-cap mb-1 text-white/45">{label}</span>
+                      {href ? (
+                        <a href={href} className="break-words text-[0.98rem] text-white/85 no-underline transition-colors hover:text-gold-light">
+                          {value}
+                        </a>
+                      ) : (
+                        <span className="text-[0.98rem] text-white/85">{value}</span>
+                      )}
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+
+          {/* Bottom bar */}
+          <div className="flex flex-col items-start justify-between gap-4 border-t border-white/10 pt-7 text-sm text-white/55 md:flex-row md:items-center">
+            <p className="m-0">© {year} Social Work Consultancy Ltd. All Rights Reserved.</p>
+            <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
+              <Link href="/privacy-policy" className="text-white/55 no-underline transition-colors hover:text-white">Privacy Policy</Link>
+              <Link href="/terms-of-service" className="text-white/55 no-underline transition-colors hover:text-white">Terms of Service</Link>
+              <Link href="/about-us#photo-credits" className="text-white/55 no-underline transition-colors hover:text-white">Photo credits</Link>
+            </div>
           </div>
         </div>
 
-        {/* ── Bottom bar ── */}
-        <div className="mt-16 pt-8 border-t border-gray-100 dark:border-gray-900 flex flex-col md:flex-row items-center justify-between gap-4">
-          <p className="text-sm font-medium text-gray-500 dark:text-gray-500 text-center md:text-left">
-            © {year} Social Work Consultancy Ltd. All Rights Reserved.
-          </p>
-
-          <div className="flex items-center gap-6 text-sm font-medium">
-            <Link
-              href="/privacy-policy"
-              className="text-gray-500 dark:text-gray-500 hover:text-[#2D6A4F] dark:hover:text-[#52b788] transition-colors duration-200"
-            >
-              Privacy Policy
-            </Link>
-            <Link
-              href="/terms-of-service"
-              className="text-gray-500 dark:text-gray-500 hover:text-[#2D6A4F] dark:hover:text-[#52b788] transition-colors duration-200"
-            >
-              Terms of Service
-            </Link>
-          </div>
-        </div>
+        {/* Oversized wordmark, cropped by the card's edge */}
+        <p
+          aria-hidden="true"
+          className="sw-display pointer-events-none relative m-0 -mb-[0.2em] select-none whitespace-nowrap text-center text-[clamp(3.4rem,15.5vw,15rem)] leading-[0.82] text-white/[0.06]"
+        >
+          Teach with <span className="sw-em text-gold/30">us</span>
+        </p>
       </div>
     </footer>
   );

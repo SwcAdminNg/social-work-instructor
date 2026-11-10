@@ -150,7 +150,7 @@ export function PasskeyContinueCard({
         type="button"
         onClick={onContinue}
         disabled={busy}
-        className="group mt-4 flex h-[54px] w-full items-center justify-center gap-3 rounded-xl bg-[#2D6A4F] text-[0.98rem] font-semibold text-white shadow-lg shadow-green-900/20 transition-colors hover:bg-[#1e4d38] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2D6A4F] focus-visible:ring-offset-2 disabled:cursor-progress disabled:opacity-80 dark:focus-visible:ring-offset-[#0b1410]"
+        className="group mt-4 flex h-[54px] w-full items-center justify-center gap-3 rounded-full bg-[#14402F] dark:bg-[#2D6A4F] text-[0.98rem] font-semibold text-white shadow-lg shadow-green-900/20 transition-colors hover:bg-[#1e4d38] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2D6A4F] focus-visible:ring-offset-2 disabled:cursor-progress disabled:opacity-80 dark:focus-visible:ring-offset-[#0b1410]"
       >
         {busy ? <IconSpinner className="h-5 w-5 animate-spin text-white/90" /> : <Fingerprint className="h-6 w-6 transition-transform duration-200 group-hover:scale-110" aria-hidden="true" />}
         {busy ? "Waiting for your fingerprint or face…" : "Continue with fingerprint or face"}
@@ -179,7 +179,7 @@ export function PasskeyButton({ busy, disabled, onClick }: { busy: boolean; disa
         type="button"
         onClick={onClick}
         disabled={busy || disabled}
-        className="group flex h-[56px] w-full items-center justify-center gap-3 rounded-xl border-[1.5px] border-[#2D6A4F]/40 bg-[#f3faf6] text-[0.98rem] font-semibold text-[#10231a] transition-colors duration-150 hover:border-[#2D6A4F] hover:bg-[#e8f5ee] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2D6A4F] focus-visible:ring-offset-2 disabled:cursor-progress disabled:opacity-70 dark:border-[#74c69d]/40 dark:bg-[#132119] dark:text-white dark:hover:border-[#74c69d] dark:focus-visible:ring-[#74c69d] dark:focus-visible:ring-offset-[#0b1410]"
+        className="group flex h-[56px] w-full items-center justify-center gap-3 rounded-full border-[1.5px] border-[#2D6A4F]/40 bg-[#f3faf6] text-[0.98rem] font-semibold text-[#10231a] transition-colors duration-150 hover:border-[#2D6A4F] hover:bg-[#e8f5ee] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2D6A4F] focus-visible:ring-offset-2 disabled:cursor-progress disabled:opacity-70 dark:border-[#74c69d]/40 dark:bg-[#132119] dark:text-white dark:hover:border-[#74c69d] dark:focus-visible:ring-[#74c69d] dark:focus-visible:ring-offset-[#0b1410]"
       >
         {busy ? (
           <IconSpinner className="h-5 w-5 animate-spin text-[#2D6A4F] dark:text-[#95d5b2]" />

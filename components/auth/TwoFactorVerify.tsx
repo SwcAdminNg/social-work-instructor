@@ -83,17 +83,17 @@ export function TwoFactorVerify({
   return (
     <div>
       <div className="mb-8">
-        <div className="w-11 h-11 rounded-xl bg-[#2D6A4F]/10 dark:bg-[#52b788]/10 flex items-center justify-center mb-4">
+        <div className="w-11 h-11 rounded-2xl bg-[#2D6A4F]/10 dark:bg-[#52b788]/10 flex items-center justify-center mb-4">
           <ShieldCheck className="w-5 h-5 text-[#2D6A4F] dark:text-[#52b788]" />
         </div>
         <h1
           ref={headingRef}
           tabIndex={-1}
-          className="text-[1.5rem] font-extrabold text-gray-900 dark:text-white tracking-tight leading-tight mb-2 outline-none"
+          className="sw-display text-[1.9rem] text-ink mb-2 outline-none"
         >
           Two-factor verification
         </h1>
-        <p className="text-[0.87rem] text-gray-500 dark:text-gray-400 flex items-center gap-1.5">
+        <p className="text-[0.98rem] text-ink-2 flex items-center gap-1.5">
           {method === "TOTP" ? (
             <>
               <Smartphone className="w-3.5 h-3.5 flex-shrink-0" />
@@ -109,7 +109,7 @@ export function TwoFactorVerify({
       </div>
 
       {error && (
-        <div role="alert" aria-live="assertive" className="mb-4 p-3 rounded-xl bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/20 text-red-600 dark:text-red-400 text-sm font-medium">
+        <div role="alert" aria-live="assertive" className="mb-4 p-3 rounded-2xl bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/20 text-red-600 dark:text-red-400 text-sm font-medium">
           {error}
         </div>
       )}

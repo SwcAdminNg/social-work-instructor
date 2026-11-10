@@ -1,18 +1,24 @@
-import { ContactHero } from "@/components/contact/ContactHero";
-import { ContactForm } from "@/components/contact/ContactForm";
-import { ContactMap } from "@/components/contact/ContactMap";
+import type { Metadata } from "next";
+import Contact from "@/components/contact/Contact";
+import { JsonLd, pageJsonLd, pageMetadata } from "@/lib/site";
 
-export const metadata = {
-  title: "Contact Us | Social Work Nigeria",
-  description: "Get in touch with the Social Work Nigeria team.",
-};
+const title = "Contact Us | Social Work Nigeria Instructors";
+const description =
+  "Ask Social Work Consultancy Ltd about becoming an instructor, building or reviewing a course, or your instructor account. We reply by email.";
 
-export default function ContactPage() {
+export const metadata: Metadata = pageMetadata({ title, description, path: "/contact" });
+
+export default async function ContactPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+}) {
+  // ?topic=apply (or course, account, partnership, other) pre-selects the enquiry type.
+  const { topic } = await searchParams;
   return (
-    <div className="w-full bg-white dark:bg-gray-950 flex flex-col">
-      <ContactHero />
-      <ContactForm />
-      <ContactMap />
-    </div>
+    <>
+      <JsonLd data={pageJsonLd({ type: "ContactPage", path: "/contact", name: title, description, crumbs: [{ name: "Contact Us", path: "/contact" }] })} />
+      <Contact initialTopic={typeof topic === "string" ? topic : undefined} />
+    </>
   );
 }

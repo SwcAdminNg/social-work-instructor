@@ -1,151 +1,135 @@
+import Image from "next/image";
 import Link from "next/link";
+import { Contours, Heading, Photo, type Vars } from "@/components/site/ui";
+import { photos, type Photo as PhotoData } from "@/lib/photos";
 
 type AuthVariant = "login" | "register" | "forgot-password" | "reset-password";
 
-const PANEL_CONFIG: Record<
-  AuthVariant,
-  {
-    image: string;
-    quote: string;
-    label: string;
-  }
-> = {
+type HomeStats = { total_number_of_students?: number; number_of_published_courses?: number } | null | undefined;
+
+// `focus` keeps the person in frame when the photo fills a tall panel.
+// Wrap a phrase of the title in *asterisks* to set it in the accent serif.
+const PANEL: Record<AuthVariant, { photo: PhotoData; focus: string; eyebrow: string; title: string; body: string }> = {
   login: {
-    image:
-      "https://images.unsplash.com/photo-1560264280-88b68371db39?q=80&w=2070&auto=format&fit=crop",
-    quote:
-      "Strong communities are built by people who stay connected.",
-    label: "Reconnect with your instructor workspace",
+    photo: photos.presenting,
+    focus: "62% 40%",
+    eyebrow: "Instructor sign in",
+    title: "Your courses are *waiting.*",
+    body: "Pick up your drafts, mark submitted essays and see where each course is in review.",
   },
   register: {
-    image:
-      "https://images.unsplash.com/photo-1573496799652-408c2ac9fe98?q=80&w=2069&auto=format&fit=crop",
-    quote:
-      "Collaborate with other instructors building stronger social work practice across Nigeria.",
-    label: "Join the instructor community",
+    photo: photos.lectureMic,
+    focus: "40% 35%",
+    eyebrow: "Become an instructor",
+    title: "Teach what you know from *practice.*",
+    body: "Apply with your details and CV. If approved, you will receive an email link to set up your instructor account.",
   },
   "forgot-password": {
-    image:
-      "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?q=80&w=2070&auto=format&fit=crop",
-    quote:
-      "Every setback is a setup for a comeback. We're here to get you back on track.",
-    label: "Account recovery",
+    photo: photos.writingNotes,
+    focus: "50% 35%",
+    eyebrow: "Account recovery",
+    title: "We will help you get *back in.*",
+    body: "Enter the email on your instructor account and we will send you a secure link to choose a new password.",
   },
   "reset-password": {
-    image:
-      "https://images.unsplash.com/photo-1531482615713-2afd69097998?q=80&w=2070&auto=format&fit=crop",
-    quote:
-      "Security and trust are the foundation of every great professional relationship.",
-    label: "Secure your account",
+    photo: photos.tabletHijab,
+    focus: "50% 25%",
+    eyebrow: "Secure your account",
+    title: "Choose a strong *new password.*",
+    body: "Use at least 8 characters. A longer passphrase is easier to remember and harder to guess.",
   },
 };
 
-export function BrandPanel({
-  variant = "login",
-  statsData,
-}: {
-  variant?: AuthVariant;
-  statsData?: any;
-}) {
-  const config = PANEL_CONFIG[variant];
-
-  const membersCount = statsData?.total_number_of_students || 120;
-  const statesCount = statsData?.number_of_published_courses || 12;
+export function BrandPanel({ variant = "login", statsData }: { variant?: AuthVariant; statsData?: HomeStats }) {
+  const panel = PANEL[variant];
+  // Only real figures from the API; nothing is shown when they are unavailable.
+  const stats = [
+    statsData?.total_number_of_students ? `${statsData.total_number_of_students.toLocaleString()} learners` : null,
+    statsData?.number_of_published_courses
+      ? `${statsData.number_of_published_courses.toLocaleString()} ${statsData.number_of_published_courses === 1 ? "course" : "courses"}`
+      : null,
+  ].filter(Boolean) as string[];
 
   return (
-    <div className="hidden lg:flex lg:w-[52%] relative overflow-hidden flex-shrink-0">
-      <img
-        src={config.image}
-        alt=""
-        aria-hidden="true"
-        className="absolute inset-0 w-full h-full object-cover object-center"
-        onError={(e) => {
-          (e.currentTarget as HTMLImageElement).style.opacity = "0";
-        }}
-      />
-      <div
-        className="absolute inset-0 -z-10"
-        style={{
-          background:
-            "linear-gradient(145deg, #0d2b1e 0%, #1a4d35 35%, #2D6A4F 65%, #52b788 100%)",
-        }}
-        aria-hidden="true"
-      />
-      <div
-        className="absolute inset-0 bg-gradient-to-t from-[#071410]/90 via-[#071410]/40 to-[#071410]/20"
-        aria-hidden="true"
-      />
-      <div className="relative z-10 flex flex-col justify-between h-full p-10 xl:p-14">
-        <Link
-          href="/"
-          className="flex items-center no-underline w-fit"
-          aria-label="Social Work Nigeria home"
-        >
-          <img
-            src="/images/logo/swc-dark-logo.png"
-            alt="Social Work Nigeria Logo"
-            width={151}
-            height={40}
-            className="w-[220px] h-auto object-contain px-2 py-1"
+    <aside
+      className="sw-on-dark sticky top-0 hidden h-[100dvh] flex-shrink-0 p-3 lg:flex lg:w-[50%] xl:w-[52%]"
+      aria-label="About the instructor platform"
+    >
+      <div className="relative h-full w-full overflow-hidden rounded-[36px] bg-forest" data-progress="view">
+        <div className="absolute inset-0" data-reveal="fade">
+          <Photo
+            photo={panel.photo}
+            priority
+            parallax={false}
+            place={false}
+            sizes="(min-width: 1024px) 160vh, 1px"
+            position={panel.focus}
+            className="h-full w-full"
           />
-        </Link>
-        <div className="max-w-sm">
-          <svg
-            width="36"
-            height="28"
-            viewBox="0 0 36 28"
-            fill="none"
-            aria-hidden="true"
-            className="mb-4 opacity-60"
-          >
-            <path
-              d="M0 28V17.6C0 13.013 1.173 9.12 3.52 5.92 5.92 2.72 9.44.853 14.08 0L15.84 3.04C12.8 3.893 10.507 5.387 8.96 7.52 7.413 9.6 6.64 12 6.64 14.72h7.04V28H0zm20.16 0V17.6c0-4.587 1.173-8.48 3.52-11.68C26.08 2.72 29.6.853 34.24 0L36 3.04c-3.04.853-5.333 2.347-6.88 4.48C27.573 9.6 26.8 12 26.8 14.72h7.04V28H20.16z"
-              fill="white"
-            />
-          </svg>
+        </div>
+        {/* Shade only behind the logo and the text, so the photo itself stays clear. */}
+        <div
+          aria-hidden="true"
+          className="absolute inset-x-0 top-0 h-40"
+          style={{ background: "linear-gradient(180deg, rgba(4,18,11,0.6), rgba(4,18,11,0))" }}
+        />
+        <div
+          aria-hidden="true"
+          className="absolute inset-x-0 bottom-0 h-[62%]"
+          style={{ background: "linear-gradient(0deg, rgba(4,18,11,0.94) 0%, rgba(4,18,11,0.72) 45%, rgba(4,18,11,0) 100%)" }}
+        />
+        <Contours className="text-leaf opacity-[0.12]" />
 
-          <p className="text-white/60 text-[0.72rem] uppercase tracking-widest font-bold mb-3">
-            {config.label}
-          </p>
-
-          <blockquote className="text-white text-[1.15rem] leading-relaxed font-medium mb-5">
-            "{config.quote}"
-          </blockquote>
-          <div className="flex flex-wrap gap-2">
-            {[
-              `${membersCount.toLocaleString()}+ Members`,
-              `${statesCount.toLocaleString()} States`,
-              "Live Community",
-            ].map((badge) => (
-              <span
-                key={badge}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/10 backdrop-blur-sm border border-white/15 text-white text-[0.72rem] font-semibold"
-              >
-                <span
-                  className="w-1.5 h-1.5 rounded-full bg-[#52b788]"
-                  aria-hidden="true"
-                />
-                {badge}
+        <div className="relative z-10 flex h-full w-full flex-col justify-between p-9 xl:p-12">
+          <div className="flex items-center justify-between gap-4">
+            <Link href="/" className="w-fit rounded-md" aria-label="Social Work Consultancy Ltd home">
+              <Image src="/images/logo/swc-logo-on-dark.webp" alt="" width={480} height={133} className="h-auto w-[172px]" priority />
+            </Link>
+            {panel.photo.place && (
+              <span className="sw-chip sw-cap bg-night/50 text-white backdrop-blur-md">
+                <span aria-hidden="true" className="h-1.5 w-1.5 rounded-full bg-gold" />
+                {panel.photo.place}
               </span>
-            ))}
+            )}
+          </div>
+
+          <div className="max-w-lg">
+            <p data-reveal className="sw-eyebrow m-0 text-gold-light">{panel.eyebrow}</p>
+            <Heading
+              as="p"
+              text={panel.title}
+              accent="text-gold-light"
+              delay={0.45}
+              className="sw-display m-0 mt-5 text-[clamp(2.3rem,3.6vw,3.6rem)] text-[#fffdf4]"
+            />
+            <p data-reveal style={{ "--d": "0.8s" } as Vars} className="m-0 mt-5 max-w-md text-[1.02rem] leading-relaxed text-white/80">
+              {panel.body}
+            </p>
+            {stats.length > 0 && (
+              <ul data-reveal style={{ "--d": "0.9s" } as Vars} className="m-0 mt-7 flex list-none flex-wrap gap-2 p-0" aria-label="Platform at a glance">
+                {stats.map((stat) => (
+                  <li key={stat} className="sw-chip border border-white/15 bg-white/10 text-white backdrop-blur-sm">
+                    <span aria-hidden="true" className="h-1.5 w-1.5 rounded-full bg-leaf" />
+                    {stat}
+                  </li>
+                ))}
+              </ul>
+            )}
+            <p className="m-0 mt-8 text-[0.72rem] text-white/50">Photo: {panel.photo.by}, Unsplash</p>
           </div>
         </div>
       </div>
-    </div>
+    </aside>
   );
 }
 
+/** Logo above the form on phones and tablets, in the colour that suits the theme. */
 export function MobileBrandLogo() {
   return (
-    <div className="flex lg:hidden items-center mb-10">
-      <Link href="/" aria-label="Social Work Nigeria home">
-        <img
-          src="/images/logo/swc-dark-logo.png"
-          alt="Social Work Nigeria Logo"
-          width={151}
-          height={40}
-          className="w-[200px] h-auto object-contain dark:px-0 dark:py-1"
-        />
+    <div className="mb-8 flex items-center lg:hidden">
+      <Link href="/" className="rounded-md" aria-label="Social Work Consultancy Ltd home">
+        <Image src="/images/logo/swc-logo-on-light.webp" alt="" width={480} height={133} className="h-auto w-[170px] dark:hidden" priority />
+        <Image src="/images/logo/swc-logo-on-dark.webp" alt="" width={480} height={133} className="hidden h-auto w-[170px] dark:block" priority />
       </Link>
     </div>
   );

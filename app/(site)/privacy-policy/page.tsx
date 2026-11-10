@@ -1,16 +1,20 @@
+import type { Metadata } from "next";
 import { PrivacyHero } from "@/components/privacy/PrivacyHero";
 import { PrivacyContent } from "@/components/privacy/PrivacyContent";
+import { JsonLd, pageJsonLd, pageMetadata } from "@/lib/site";
 
-export const metadata = {
-  title: "Privacy Policy | Social Work Nigeria",
-  description: "Privacy Policy, Terms of Use, and Safeguarding Statement for Social Work Consultancy Ltd.",
-};
+const title = "Privacy Policy | Social Work Nigeria Instructors";
+const description =
+  "Privacy Policy, Terms of Use and Safeguarding Statement for Social Work Consultancy Ltd.";
+
+export const metadata: Metadata = pageMetadata({ title, description, path: "/privacy-policy" });
 
 export default function PrivacyPolicyPage() {
   return (
-    <div className="w-full bg-white dark:bg-[#0a0a0a] flex flex-col">
+    <>
+      <JsonLd data={pageJsonLd({ path: "/privacy-policy", name: title, description, crumbs: [{ name: "Privacy Policy", path: "/privacy-policy" }] })} />
       <PrivacyHero />
       <PrivacyContent />
-    </div>
+    </>
   );
 }

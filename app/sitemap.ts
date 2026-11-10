@@ -6,6 +6,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
 
   const staticRoutes = [
     "",
+    "/why-teach",
+    "/how-it-works",
     "/about-us",
     "/contact",
     "/faq",
@@ -13,8 +15,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
     "/terms-of-service",
     "/login",
     "/register",
-    "/forgot-password",
-    "/reset-password",
   ];
 
   return staticRoutes.map((route) => ({
