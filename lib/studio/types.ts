@@ -636,3 +636,43 @@ export type EssayMark = {
   created_at?: string;
   updated_at?: string;
 };
+
+
+/* Quiz attempts as each learner saw them: retries are reworded by AI. */
+export type QuizAttemptReviewOption = {
+  id: string;
+  text: string;
+  original_text: string;
+  is_correct: boolean;
+  selected: boolean;
+};
+
+export type QuizAttemptReviewQuestion = {
+  id: string;
+  section_title?: string | null;
+  text: string;
+  original_text: string;
+  allow_multiple_answers: boolean;
+  options: QuizAttemptReviewOption[];
+  /** 0-1; partial credit on "any of" multi-answer questions. */
+  earned: number;
+};
+
+export type QuizAttemptReview = {
+  attempt_id: string;
+  user_id: string;
+  user_full_name: string;
+  user_email: string;
+  attempt_number: number;
+  status: "SUBMITTED" | "IN_PROGRESS";
+  started_at?: string | null;
+  submitted_at?: string | null;
+  score?: number | null;
+  passed?: boolean | null;
+  auto_submitted: boolean;
+  is_reset: boolean;
+  paraphrased: boolean;
+  paraphrase_model?: string | null;
+  version_recorded: boolean;
+  questions: QuizAttemptReviewQuestion[];
+};

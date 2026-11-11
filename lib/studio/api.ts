@@ -37,6 +37,7 @@ import type {
   SubmitPayload,
   VideoUploadCredentials,
   AnchorType,
+  QuizAttemptReview,
 } from "./types";
 
 export type FieldError = { loc?: (string | number)[]; msg?: string };
@@ -347,6 +348,10 @@ export const studioApi = {
     post<Revision>(`/courses/${courseId}/versions/${versionId}/rollback`, { reason }),
   archive: (courseId: string, reason?: string) => post(`/courses/${courseId}/archive`, { reason }),
   reinstate: (courseId: string, reason?: string) => post<Revision>(`/courses/${courseId}/reinstate`, { reason }),
+
+  /* Quiz attempts, each as the learner saw it (AI-reworded on retries) */
+  listQuizAttempts: (itemId: string, page = 1) =>
+    list<QuizAttemptReview>(`/courses/items/${itemId}/quiz/attempts${qs({ page, page_size: 100 })}`),
 
   /* Essay marking (§11) */
   listEssaySubmissions: (itemId: string, page = 1) =>

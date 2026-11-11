@@ -14,6 +14,7 @@ import {
   RefreshCw,
   Search,
   ShieldCheck,
+  Users,
   X,
 } from "lucide-react";
 import {
@@ -401,6 +402,11 @@ function AssessmentRow({ row: r, canMark }: { row: Row; canMark: boolean }) {
         {r.type === "ESSAY" && canMark && live && (
           <ButtonLink href={`/dashboard/assessments/${r.item.id}?course=${r.courseId}`} size="sm" variant="secondary" icon={ClipboardCheck}>
             Mark submissions
+          </ButtonLink>
+        )}
+        {r.type !== "ESSAY" && canMark && live && (
+          <ButtonLink href={`/dashboard/assessments/${r.item.id}/attempts?course=${r.courseId}`} size="sm" variant="secondary" icon={Users}>
+            View attempts
           </ButtonLink>
         )}
         <ButtonLink href={editHref} size="sm" variant="outline" icon={PenLine}>

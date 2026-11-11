@@ -18,5 +18,6 @@ export const qk = {
   approval: (view: ApprovalView, kind?: string) => ["studio", "approval", view, kind ?? "ALL"] as const,
   approvalCounts: () => ["studio", "approval-counts"] as const,
   essaySubmissions: (itemId: string) => ["studio", "essay-submissions", itemId] as const,
+  quizAttempts: (itemId: string) => ["studio", "quiz-attempts", itemId] as const,
   mark: (id: string) => ["studio", "mark", id] as const,
 };
