@@ -1,24 +1,13 @@
 import type { Metadata } from "next";
-import { Plus_Jakarta_Sans, Roboto } from "next/font/google";
+import "./fonts.css";
 import "./globals.css";
+import { bodyFont, preloadBodyFont } from "@/lib/fonts";
 import ThemeProvider from "@/components/generic/ThemeProvider";
 import ThemeToggle from "@/components/generic/ThemeToggle";
 import { auth } from "@/auth";
 import SessionMonitor from "@/components/auth/SessionMonitor";
 import QueryProvider from "@/components/generic/QueryProvider";
 import { Toaster } from "sonner";
-
-const roboto = Roboto({
-  variable: "--font-roboto",
-  weight: ["400", "500", "700"],
-  subsets: ["latin"],
-});
-
-const jakarta = Plus_Jakarta_Sans({
-  variable: "--font-jakarta",
-  weight: ["500", "600", "700", "800"],
-  subsets: ["latin"],
-});
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_BASE_URL || "https://socialworknigeria.org"),
@@ -32,10 +21,11 @@ export default async function RootLayout({
   children: React.ReactNode;
 }) {
   const session = await auth();
+  preloadBodyFont();
 
   return (
     <html lang="en" className="scroll-smooth" suppressHydrationWarning data-scroll-behavior="smooth">
-      <body className={`${roboto.className} ${roboto.variable} ${jakarta.variable} antialiased`}>
+      <body className={`${bodyFont} antialiased`}>
         <ThemeProvider>
           <QueryProvider>
             <SessionMonitor session={session}>

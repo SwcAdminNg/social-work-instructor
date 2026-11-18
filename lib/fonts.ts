@@ -1,21 +1,30 @@
-import { Bricolage_Grotesque, Instrument_Serif } from "next/font/google";
+import { preload } from "react-dom";
 
-/** Display face for headings on the public site and sign-in pages. */
-export const displayFont = Bricolage_Grotesque({
-  subsets: ["latin"],
-  axes: ["opsz", "wdth"],
-  variable: "--font-bricolage",
-  display: "swap",
-});
+/**
+ * Site fonts are self-hosted (see app/fonts.css and public/fonts), so a build
+ * never depends on reaching Google Fonts.
+ */
 
-/** Italic serif used for the accent word inside a heading. */
-export const accentFont = Instrument_Serif({
-  subsets: ["latin"],
-  weight: "400",
-  style: ["normal", "italic"],
-  variable: "--font-instrument",
-  display: "swap",
-});
+/** Class that sets the body face (Roboto). */
+export const bodyFont = "sw-font-body";
 
-/** Class names that expose both font variables to a subtree. */
-export const siteFonts = `${displayFont.variable} ${accentFont.variable}`;
+/** Class names that expose the display and accent font variables to a subtree. */
+export const siteFonts = "sw-font-vars";
+
+function preloadAll(files: string[]) {
+  for (const href of files) preload(href, { as: "font", type: "font/woff2", crossOrigin: "anonymous" });
+}
+
+/** Preload the body face's Latin file (every page). */
+export function preloadBodyFont() {
+  preloadAll(["/fonts/roboto-latin.woff2"]);
+}
+
+/** Preload the display and accent faces for layouts that use `siteFonts`. */
+export function preloadSiteFonts() {
+  preloadAll([
+    "/fonts/bricolage-grotesque-latin.woff2",
+    "/fonts/instrument-serif-latin.woff2",
+    "/fonts/instrument-serif-latin-italic.woff2",
+  ]);
+}
