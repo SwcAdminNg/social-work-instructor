@@ -5,6 +5,11 @@ import * as Dialog from "@radix-ui/react-dialog";
 import { ShieldCheck, Smartphone, Mail, Copy, Check, ArrowLeft, TriangleAlert } from "lucide-react";
 import { OtpInput } from "./shared/OtpInput";
 import { IconSpinner } from "./shared/icons";
+import { AuthHeading, AuthMessage, authLink, authTextButton } from "./shared/AuthUI";
+
+const methodButton =
+  "flex items-center gap-4 rounded-lg border border-swc-line bg-swc-card p-4 text-left transition-colors hover:border-swc-mid disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:border-swc-line";
+const methodTile = "flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-swc-mint text-swc-label";
 
 type SetupApi =
   | { kind: "challenge"; challengeToken: string }
@@ -178,31 +183,20 @@ export function TwoFactorSetup({
 
   return (
     <div>
-      <div className="mb-8">
-        <div className="w-11 h-11 rounded-2xl bg-[#2D6A4F]/10 dark:bg-[#52b788]/10 flex items-center justify-center mb-4">
-          <ShieldCheck className="w-5 h-5 text-[#2D6A4F] dark:text-[#52b788]" />
-        </div>
-        <h1
-          ref={headingRef}
-          tabIndex={-1}
-          className="sw-display text-[1.9rem] text-ink mb-2 outline-none"
-        >
-          {step === "choice" ? title : "Enter verification code"}
-        </h1>
-        <p className="text-[0.98rem] text-ink-2">
-          {step === "choice"
+      <AuthHeading
+        icon={<ShieldCheck className="h-5 w-5" />}
+        title={step === "choice" ? title : "Enter verification code"}
+        headingRef={headingRef}
+        intro={
+          step === "choice"
             ? description
             : step === "totp"
               ? "Scan the QR code with your authenticator app, then enter the 6-digit code it shows."
-              : "We sent a 6-digit code to your email address."}
-        </p>
-      </div>
+              : "We sent a 6-digit code to your email address."
+        }
+      />
 
-      {error && (
-        <div role="alert" aria-live="assertive" className="mb-4 p-3 rounded-2xl bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/20 text-red-600 dark:text-red-400 text-sm font-medium">
-          {error}
-        </div>
-      )}
+      {error && <AuthMessage>{error}</AuthMessage>}
 
       {step === "choice" && (
         <div className="flex flex-col gap-3">
@@ -210,53 +204,53 @@ export function TwoFactorSetup({
             type="button"
             disabled={loading || currentMethod === "TOTP"}
             onClick={() => selectMethod("TOTP")}
-            className="group flex items-center gap-4 p-4 rounded-2xl border-2 border-gray-200 dark:border-white/10 hover:border-[#2D6A4F] dark:hover:border-[#52b788] bg-white dark:bg-white/5 text-left transition-all duration-150 disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:border-gray-200 dark:disabled:hover:border-white/10"
+            className={methodButton}
           >
-            <div className="w-10 h-10 rounded-lg bg-[#2D6A4F]/10 dark:bg-[#52b788]/10 flex items-center justify-center flex-shrink-0">
-              <Smartphone className="w-5 h-5 text-[#2D6A4F] dark:text-[#52b788]" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-[0.9rem] font-bold text-gray-900 dark:text-white">
+            <span aria-hidden="true" className={methodTile}>
+              <Smartphone className="h-5 w-5" />
+            </span>
+            <span className="min-w-0 flex-1">
+              <span className="block text-[0.95rem] font-bold text-swc-ink">
                 Authenticator app{" "}
                 {currentMethod === "TOTP" ? (
-                  <span className="ml-1 text-[0.65rem] font-bold uppercase tracking-wide text-gray-400 dark:text-gray-500">
+                  <span className="ml-1 text-[0.68rem] font-bold uppercase tracking-[0.1em] text-swc-ink-3">
                     Current method
                   </span>
                 ) : (
-                  <span className="ml-1 text-[0.65rem] font-bold uppercase tracking-wide text-[#2D6A4F] dark:text-[#52b788]">
+                  <span className="ml-1 text-[0.68rem] font-bold uppercase tracking-[0.1em] text-swc-label">
                     Recommended
                   </span>
                 )}
-              </p>
-              <p className="text-[0.8rem] text-gray-500 dark:text-gray-400">
+              </span>
+              <span className="mt-0.5 block text-[0.86rem] text-swc-ink-2">
                 Use Google Authenticator, Microsoft Authenticator, or similar.
-              </p>
-            </div>
-            {loading ? <IconSpinner className="w-4 h-4 text-gray-400 flex-shrink-0" /> : null}
+              </span>
+            </span>
+            {loading ? <IconSpinner className="h-4 w-4 flex-shrink-0 text-swc-ink-3" /> : null}
           </button>
 
           <button
             type="button"
             disabled={loading || currentMethod === "EMAIL"}
             onClick={() => selectMethod("EMAIL")}
-            className="group flex items-center gap-4 p-4 rounded-2xl border-2 border-gray-200 dark:border-white/10 hover:border-[#2D6A4F] dark:hover:border-[#52b788] bg-white dark:bg-white/5 text-left transition-all duration-150 disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:border-gray-200 dark:disabled:hover:border-white/10"
+            className={methodButton}
           >
-            <div className="w-10 h-10 rounded-lg bg-[#2D6A4F]/10 dark:bg-[#52b788]/10 flex items-center justify-center flex-shrink-0">
-              <Mail className="w-5 h-5 text-[#2D6A4F] dark:text-[#52b788]" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-[0.9rem] font-bold text-gray-900 dark:text-white">
+            <span aria-hidden="true" className={methodTile}>
+              <Mail className="h-5 w-5" />
+            </span>
+            <span className="min-w-0 flex-1">
+              <span className="block text-[0.95rem] font-bold text-swc-ink">
                 Email code
                 {currentMethod === "EMAIL" && (
-                  <span className="ml-1 text-[0.65rem] font-bold uppercase tracking-wide text-gray-400 dark:text-gray-500">
+                  <span className="ml-1 text-[0.68rem] font-bold uppercase tracking-[0.1em] text-swc-ink-3">
                     Current method
                   </span>
                 )}
-              </p>
-              <p className="text-[0.8rem] text-gray-500 dark:text-gray-400">
+              </span>
+              <span className="mt-0.5 block text-[0.86rem] text-swc-ink-2">
                 Get a 6-digit code by email each time you sign in.
-              </p>
-            </div>
+              </span>
+            </span>
           </button>
         </div>
       )}
@@ -264,29 +258,27 @@ export function TwoFactorSetup({
       {step === "totp" && (
         <div>
           {totpQrDataUri && (
-            <div className="flex justify-center mb-5">
-              <div className="p-3 rounded-2xl bg-white border border-gray-200 dark:border-white/10">
+            <div className="mb-5 flex justify-center">
+              <div className="rounded-lg border border-swc-line bg-white p-3">
                 <img src={totpQrDataUri} alt="Scan this QR code with your authenticator app" width={176} height={176} />
               </div>
             </div>
           )}
 
           <div className="mb-5">
-            <p className="text-[0.75rem] font-semibold text-gray-500 dark:text-gray-400 mb-1.5">
-              Can&apos;t scan? Enter this key manually
-            </p>
+            <p className="swc-label-text">Can&apos;t scan? Enter this key manually</p>
             <button
               type="button"
               onClick={copySecret}
-              className="w-full flex items-center justify-between gap-2 px-4 py-3 rounded-2xl bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 hover:border-[#2D6A4F] dark:hover:border-[#52b788] transition-colors duration-150"
+              className="flex w-full items-center justify-between gap-2 rounded-md border border-swc-line bg-swc-paper px-4 py-3 transition-colors hover:border-swc-mid"
             >
-              <span className="font-mono text-[0.8rem] text-gray-800 dark:text-gray-200 break-all text-left">
+              <span className="break-all text-left font-mono text-[0.84rem] text-swc-ink">
                 {totpSecret}
               </span>
               {copied ? (
-                <Check className="w-4 h-4 text-[#2D6A4F] dark:text-[#52b788] flex-shrink-0" />
+                <Check aria-hidden="true" className="h-4 w-4 flex-shrink-0 text-swc-label" />
               ) : (
-                <Copy className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                <Copy aria-hidden="true" className="h-4 w-4 flex-shrink-0 text-swc-ink-3" />
               )}
             </button>
           </div>
@@ -300,8 +292,8 @@ export function TwoFactorSetup({
           />
 
           {confirming && (
-            <p className="mt-3 flex items-center justify-center gap-2 text-[0.8rem] text-gray-500 dark:text-gray-400">
-              <IconSpinner className="w-3.5 h-3.5" /> Verifying…
+            <p className="mt-3 flex items-center justify-center gap-2 text-[0.86rem] text-swc-ink-3">
+              <IconSpinner className="h-3.5 w-3.5" /> Verifying…
             </p>
           )}
 
@@ -312,9 +304,9 @@ export function TwoFactorSetup({
               setError("");
               setCode("");
             }}
-            className="mt-5 flex items-center gap-1.5 text-[0.83rem] font-semibold text-gray-500 dark:text-gray-400 hover:text-[#2D6A4F] dark:hover:text-[#52b788] transition-colors duration-150"
+            className={`${authTextButton} mt-5`}
           >
-            <ArrowLeft className="w-3.5 h-3.5" /> Choose a different method
+            <ArrowLeft aria-hidden="true" className="h-4 w-4" /> Choose a different method
           </button>
         </div>
       )}
@@ -330,12 +322,12 @@ export function TwoFactorSetup({
           />
 
           {confirming && (
-            <p className="mt-3 flex items-center justify-center gap-2 text-[0.8rem] text-gray-500 dark:text-gray-400">
-              <IconSpinner className="w-3.5 h-3.5" /> Verifying…
+            <p className="mt-3 flex items-center justify-center gap-2 text-[0.86rem] text-swc-ink-3">
+              <IconSpinner className="h-3.5 w-3.5" /> Verifying…
             </p>
           )}
 
-          <div className="mt-5 flex items-center justify-between">
+          <div className="mt-5 flex flex-wrap items-center justify-between gap-2">
             <button
               type="button"
               onClick={() => {
@@ -343,16 +335,16 @@ export function TwoFactorSetup({
                 setError("");
                 setCode("");
               }}
-              className="flex items-center gap-1.5 text-[0.83rem] font-semibold text-gray-500 dark:text-gray-400 hover:text-[#2D6A4F] dark:hover:text-[#52b788] transition-colors duration-150"
+              className={authTextButton}
             >
-              <ArrowLeft className="w-3.5 h-3.5" /> Choose a different method
+              <ArrowLeft aria-hidden="true" className="h-4 w-4" /> Choose a different method
             </button>
 
             <button
               type="button"
               disabled={resendCooldown > 0}
               onClick={resendEmail}
-              className="text-[0.83rem] font-semibold text-[#2D6A4F] dark:text-[#52b788] hover:text-[#1e4d38] dark:hover:text-white disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-150"
+              className={`${authLink} text-[0.9rem] disabled:cursor-not-allowed disabled:no-underline disabled:opacity-60`}
             >
               {resendCooldown > 0 ? `Resend in ${resendCooldown}s` : "Resend code"}
             </button>
@@ -361,28 +353,24 @@ export function TwoFactorSetup({
       )}
 
       {step === "choice" && onBack && (
-        <button
-          type="button"
-          onClick={onBack}
-          className="mt-6 flex items-center gap-1.5 text-[0.83rem] font-semibold text-gray-500 dark:text-gray-400 hover:text-[#2D6A4F] dark:hover:text-[#52b788] transition-colors duration-150"
-        >
-          <ArrowLeft className="w-3.5 h-3.5" /> Back
+        <button type="button" onClick={onBack} className={`${authTextButton} mt-6`}>
+          <ArrowLeft aria-hidden="true" className="h-4 w-4" /> Back
         </button>
       )}
 
       <Dialog.Root open={!!pendingMethod} onOpenChange={(open) => !open && setPendingMethod(null)}>
         <Dialog.Portal>
           <Dialog.Overlay className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
-          <Dialog.Content className="fixed left-[50%] top-[50%] z-50 grid w-[calc(100%-2rem)] max-w-sm translate-x-[-50%] translate-y-[-50%] gap-4 border border-gray-200 dark:border-gray-800 bg-white dark:bg-[#121212] p-6 shadow-2xl duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 rounded-2xl">
+          <Dialog.Content className="fixed left-[50%] top-[50%] z-50 grid w-[calc(100%-2rem)] max-w-sm translate-x-[-50%] translate-y-[-50%] gap-4 rounded-lg border border-swc-line bg-swc-card p-6 shadow-2xl duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95">
             <div className="flex items-start gap-3">
-              <div className="w-10 h-10 rounded-2xl bg-amber-50 dark:bg-amber-500/10 flex items-center justify-center flex-shrink-0">
-                <TriangleAlert className="w-5 h-5 text-amber-500" />
+              <div aria-hidden="true" className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-amber-50 dark:bg-amber-500/10">
+                <TriangleAlert className="h-5 w-5 text-amber-700 dark:text-amber-300" />
               </div>
               <div className="flex-1 min-w-0">
-                <Dialog.Title className="text-[1.05rem] font-bold text-gray-900 dark:text-white">
+                <Dialog.Title className="text-[1.05rem] font-bold text-swc-ink">
                   Switch to {pendingMethod === "TOTP" ? "authenticator app" : "email code"}?
                 </Dialog.Title>
-                <Dialog.Description className="mt-1.5 text-[0.83rem] text-gray-500 dark:text-gray-400 leading-relaxed">
+                <Dialog.Description className="mt-1.5 text-[0.88rem] leading-relaxed text-swc-ink-2">
                   {pendingMethod === "TOTP"
                     ? "Your current method will stop working for sign-in. You'll need to set up an authenticator app to continue."
                     : "Your current method will stop working for sign-in, including your saved authenticator app. You'll verify with an emailed code from now on."}
@@ -394,7 +382,7 @@ export function TwoFactorSetup({
               <Dialog.Close asChild>
                 <button
                   type="button"
-                  className="inline-flex h-10 items-center justify-center rounded-2xl bg-gray-100 dark:bg-gray-800 px-4 text-sm font-semibold text-gray-900 dark:text-gray-100 transition-colors hover:bg-gray-200 dark:hover:bg-gray-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-400"
+                  className="swc-btn swc-btn--outline min-h-[44px] px-4"
                 >
                   Cancel
                 </button>
@@ -406,7 +394,7 @@ export function TwoFactorSetup({
                   setPendingMethod(null);
                   if (method) choose(method);
                 }}
-                className="inline-flex h-10 items-center justify-center rounded-2xl bg-[#2D6A4F] px-4 text-sm font-semibold text-white transition-colors hover:bg-[#1B4332] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2D6A4F] shadow-sm"
+                className="swc-btn swc-btn--green min-h-[44px] px-4"
               >
                 Switch method
               </button>

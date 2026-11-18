@@ -11,7 +11,8 @@ import {
   IconSpinner,
   IconUser,
 } from "@/components/auth/shared/icons";
-import { FileText, UploadCloud } from "lucide-react";
+import { AlertCircle, FileText, UploadCloud } from "lucide-react";
+import { AuthHeading, AuthMessage, authButton, authLink } from "@/components/auth/shared/AuthUI";
 
 type FieldErrors = Partial<Record<"firstName" | "lastName" | "email" | "phone" | "cv", string>>;
 
@@ -128,26 +129,13 @@ export default function InstructorApplication() {
   if (submitted) {
     return (
       <AuthPageShell variant="register">
-        <div className="mb-8">
-          <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-[#2D6A4F]/10 text-[#2D6A4F] dark:bg-[#52b788]/10 dark:text-[#52b788]">
-            <UploadCloud className="h-6 w-6" />
-          </div>
-          <p className="sw-eyebrow text-accent mb-4">
-            Application submitted
-          </p>
-          <h1 className="sw-display text-[2.1rem] sm:text-[2.6rem] text-ink mb-3">
-            Thanks for applying
-          </h1>
-          <p className="text-[0.98rem] leading-relaxed text-ink-2">
-            Your instructor application and CV have been submitted. Our team will
-            review it and email you with the next step. If approved, that email
-            will include a setup link for your instructor account.
-          </p>
-        </div>
-        <Link
-          href="/login"
-          className="inline-flex h-[56px] w-full items-center justify-center rounded-full bg-[#14402F] px-5 text-[0.98rem] font-semibold text-white no-underline transition hover:bg-[#0c2a1e] dark:bg-[#2D6A4F] dark:hover:bg-[#3d8c68]"
-        >
+        <AuthHeading
+          icon={<UploadCloud className="h-5 w-5" />}
+          eyebrow="Application submitted"
+          title="Thanks for applying"
+          intro="Your instructor application and CV have been submitted. Our team will review it and email you with the next step. If approved, that email will include a setup link for your instructor account."
+        />
+        <Link href="/login" className={authButton}>
           Back to sign in
         </Link>
       </AuthPageShell>
@@ -156,27 +144,16 @@ export default function InstructorApplication() {
 
   return (
     <AuthPageShell variant="register">
-      <div className="mb-8">
-        <p className="sw-eyebrow text-accent mb-4">
-          Become an instructor
-        </p>
-        <h1 className="sw-display text-[2.1rem] sm:text-[2.6rem] text-ink mb-3">
-          Submit your application
-        </h1>
-        <p className="text-[0.98rem] leading-relaxed text-ink-2">
-          Apply with your contact details and CV. If approved, you will receive
-          an emailed link to finish setting up your instructor account.
-        </p>
-      </div>
+      <AuthHeading
+        eyebrow="Become an instructor"
+        title="Express interest"
+        intro="Apply with your contact details and CV. If approved, you will receive an emailed link to finish setting up your instructor account."
+      />
 
-      {error && (
-        <div role="alert" className="mb-4 rounded-2xl border border-red-200 bg-red-50 p-3 text-sm font-medium text-red-600 dark:border-red-500/20 dark:bg-red-500/10 dark:text-red-400">
-          {error}
-        </div>
-      )}
+      {error && <AuthMessage>{error}</AuthMessage>}
 
-      <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-4">
-        <div className="grid grid-cols-2 gap-3">
+      <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-5">
+        <div className="grid gap-5 min-[480px]:grid-cols-2 min-[480px]:gap-3">
           <FloatingInput
             ref={firstNameRef}
             id="firstName"
@@ -242,45 +219,49 @@ export default function InstructorApplication() {
         />
 
         <div>
+          <span className="swc-label-text" aria-hidden="true">
+            CV
+          </span>
           <label
             htmlFor="cv"
-            className="flex cursor-pointer items-center gap-3 rounded-2xl border-2 border-dashed border-line bg-card p-4 transition hover:border-[#2D6A4F] dark:border-white/10 dark:bg-white/5 dark:hover:border-[#52b788]"
+            className={`flex cursor-pointer items-center gap-3 rounded-md border border-dashed bg-swc-paper p-4 transition-colors hover:border-swc-mid has-[:focus-visible]:outline has-[:focus-visible]:outline-[3px] has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:[outline-color:var(--swc-focus)] ${
+              fieldErrors.cv ? "border-red-600 dark:border-red-400" : "border-swc-ink-3"
+            }`}
           >
-            <span className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-[#2D6A4F]/10 text-[#2D6A4F] dark:bg-[#52b788]/10 dark:text-[#52b788]">
+            <span aria-hidden="true" className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-swc-mint text-swc-label">
               <FileText className="h-5 w-5" />
             </span>
             <span className="min-w-0 flex-1">
-              <span className="block truncate text-sm font-bold text-gray-900 dark:text-white">
+              <span className="block truncate text-[0.95rem] font-bold text-swc-ink">
                 {cvFile ? cvFile.name : "Attach your CV"}
               </span>
-              <span className="mt-1 block text-xs text-gray-500 dark:text-gray-400">
+              <span className="mt-1 block text-[0.84rem] text-swc-ink-3">
                 PDF, DOC, or DOCX. Uploaded directly after application creation.
               </span>
             </span>
+            <input
+              ref={fileRef}
+              id="cv"
+              type="file"
+              accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+              className="sr-only"
+              aria-invalid={!!fieldErrors.cv || undefined}
+              aria-describedby={fieldErrors.cv ? "cv-error" : undefined}
+              onChange={(event) => {
+                setCvFile(event.target.files?.[0] ?? null);
+                clearField("cv");
+              }}
+            />
           </label>
-          <input
-            ref={fileRef}
-            id="cv"
-            type="file"
-            accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-            className="sr-only"
-            onChange={(event) => {
-              setCvFile(event.target.files?.[0] ?? null);
-              clearField("cv");
-            }}
-          />
           {fieldErrors.cv && (
-            <p className="mt-1.5 px-1 text-xs font-medium text-red-500">
+            <p id="cv-error" className="mt-1.5 flex items-start gap-1.5 text-[0.86rem] font-medium text-red-700 dark:text-red-300">
+              <AlertCircle size={15} className="mt-[2px] flex-none" aria-hidden="true" />
               {fieldErrors.cv}
             </p>
           )}
         </div>
 
-        <button
-          type="submit"
-          disabled={loading}
-          className="relative mt-2 flex h-[56px] w-full items-center justify-center gap-2 rounded-full bg-[#14402F] dark:bg-[#2D6A4F] text-[0.98rem] font-semibold text-white shadow-lg shadow-green-900/20 transition-all duration-200 hover:-translate-y-0.5 hover:bg-[#0c2a1e] dark:hover:bg-[#3d8c68] hover:shadow-green-900/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2D6A4F] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-70 disabled:hover:translate-y-0"
-        >
+        <button type="submit" disabled={loading} className={`${authButton} mt-1`}>
           {loading ? (
             <>
               <IconSpinner className="h-4 w-4 text-white/80" />
@@ -293,14 +274,15 @@ export default function InstructorApplication() {
             </>
           )}
         </button>
+
+        <p className="m-0 text-[0.84rem] leading-[1.5] text-swc-ink-3">
+          Submitting an expression of interest does not guarantee selection or a commission.
+        </p>
       </form>
 
-      <p className="mt-6 text-center text-[0.92rem] text-ink-2">
+      <p className="mt-7 text-center text-[0.92rem] text-swc-ink-2">
         Already approved or have an account?{" "}
-        <Link
-          href="/login"
-          className="font-semibold text-[#2D6A4F] no-underline transition-colors hover:text-[#1e4d38] dark:text-[#52b788] dark:hover:text-white"
-        >
+        <Link href="/login" className={authLink}>
           Sign in
         </Link>
       </p>

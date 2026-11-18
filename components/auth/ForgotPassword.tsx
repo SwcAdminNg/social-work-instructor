@@ -2,7 +2,9 @@
 
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
+import { MailCheck } from "lucide-react";
 import { AuthPageShell } from "./shared/AuthPageShell";
+import { AuthHeading, AuthMessage, authButton, authLink } from "./shared/AuthUI";
 import { FloatingInput } from "./shared/FloatingInput";
 import { IconArrowRight, IconMail, IconSpinner } from "./shared/icons";
 
@@ -58,42 +60,28 @@ export default function ForgotPassword({ statsData }: { statsData?: any }) {
   if (sent) {
     return (
       <AuthPageShell variant="forgot-password">
-        <div className="mb-8">
-          <p className="sw-eyebrow text-accent mb-4">
-            Check your inbox
-          </p>
-          <h1
-            ref={sentHeadingRef}
-            tabIndex={-1}
-            className="sw-display text-[2.1rem] sm:text-[2.6rem] text-ink mb-3 outline-none"
-          >
-            Reset link sent
-          </h1>
-          <p className="text-[0.98rem] text-ink-2">
-            We've sent a password reset link to{" "}
-            <span className="font-semibold text-gray-700 dark:text-gray-300">
-              {email}
-            </span>
-            . Follow the link in the email to choose a new password.
-          </p>
-        </div>
+        <AuthHeading
+          icon={<MailCheck className="h-5 w-5" />}
+          eyebrow="Check your inbox"
+          title="Reset link sent"
+          headingRef={sentHeadingRef}
+          intro={
+            <p className="m-0">
+              We&apos;ve sent a password reset link to <span className="font-semibold text-swc-ink">{email}</span>. Follow the
+              link in the email to choose a new password.
+            </p>
+          }
+        />
 
-        <p className="text-center text-[0.85rem] text-gray-500 dark:text-gray-400">
-          Didn't get the email?{" "}
-          <button
-            type="button"
-            onClick={() => setSent(false)}
-            className="font-semibold text-[#2D6A4F] dark:text-[#52b788] hover:text-[#1e4d38] dark:hover:text-white transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2D6A4F] dark:focus-visible:ring-[#52b788] rounded"
-          >
+        <p className="text-center text-[0.92rem] text-swc-ink-2">
+          Didn&apos;t get the email?{" "}
+          <button type="button" onClick={() => setSent(false)} className={authLink}>
             Try again
           </button>
         </p>
 
-        <p className="mt-10 text-center text-[0.85rem] text-gray-500 dark:text-gray-400">
-          <Link
-            href="/login"
-            className="font-semibold text-[#2D6A4F] dark:text-[#52b788] hover:text-[#1e4d38] dark:hover:text-white no-underline transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2D6A4F] dark:focus-visible:ring-[#52b788] rounded"
-          >
+        <p className="mt-6 border-t border-swc-line pt-5 text-center text-[0.92rem]">
+          <Link href="/login" className={authLink}>
             Back to sign in
           </Link>
         </p>
@@ -103,28 +91,15 @@ export default function ForgotPassword({ statsData }: { statsData?: any }) {
 
   return (
     <AuthPageShell variant="forgot-password" statsData={statsData}>
-      {/* Heading */}
-      <div className="mb-8">
-        <p className="sw-eyebrow text-accent mb-4">
-          Forgot password
-        </p>
-        <h1 className="sw-display text-[2.1rem] sm:text-[2.6rem] text-ink mb-3">
-          Forgot your password?
-        </h1>
-        <p className="text-[0.98rem] text-ink-2">
-          Enter the email associated with your account and we'll send you a
-          link to reset your password.
-        </p>
-      </div>
+      <AuthHeading
+        eyebrow="Forgot password"
+        title="Forgot your password?"
+        intro="Enter the email associated with your account and we'll send you a link to reset your password."
+      />
 
-      {error && (
-        <div role="alert" aria-live="assertive" className="mb-4 p-3 rounded-2xl bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/20 text-red-600 dark:text-red-400 text-sm font-medium">
-          {error}
-        </div>
-      )}
+      {error && <AuthMessage>{error}</AuthMessage>}
 
-      {/* Form */}
-      <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-4">
+      <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-5">
         <FloatingInput
           ref={emailRef}
           id="email"
@@ -142,41 +117,24 @@ export default function ForgotPassword({ statsData }: { statsData?: any }) {
           error={emailError}
         />
 
-        {/* Submit button */}
-        <button
-          type="submit"
-          disabled={loading}
-          className={`
-            relative mt-2 w-full h-[56px] rounded-full font-semibold text-[0.98rem] text-white
-            bg-[#14402F] hover:bg-[#0c2a1e] dark:bg-[#2D6A4F] dark:hover:bg-[#3d8c68]
-            shadow-lg shadow-green-900/20 hover:shadow-green-900/30
-            transition-all duration-200 hover:-translate-y-0.5
-            focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2D6A4F] focus-visible:ring-offset-2
-            disabled:opacity-70 disabled:cursor-not-allowed disabled:translate-y-0
-            overflow-hidden
-          `}
-        >
+        <button type="submit" disabled={loading} className={`${authButton} mt-1`}>
           {loading ? (
-            <span className="flex items-center justify-center gap-2.5">
-              <IconSpinner className="w-4 h-4 text-white/80" />
+            <>
+              <IconSpinner className="h-4 w-4 text-white/80" />
               Sending link…
-            </span>
+            </>
           ) : (
-            <span className="flex items-center justify-center gap-2">
+            <>
               Send reset link
               <IconArrowRight />
-            </span>
+            </>
           )}
         </button>
       </form>
 
-      {/* Login link */}
-      <p className="mt-6 text-center text-[0.85rem] text-gray-500 dark:text-gray-400">
+      <p className="mt-7 text-center text-[0.92rem] text-swc-ink-2">
         Remember your password?{" "}
-        <Link
-          href="/login"
-          className="font-semibold text-[#2D6A4F] dark:text-[#52b788] hover:text-[#1e4d38] dark:hover:text-white no-underline transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2D6A4F] dark:focus-visible:ring-[#52b788] rounded"
-        >
+        <Link href="/login" className={authLink}>
           Sign in
         </Link>
       </p>

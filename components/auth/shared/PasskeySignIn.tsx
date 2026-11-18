@@ -136,33 +136,33 @@ export function PasskeyContinueCard({
   onUseAnother: () => void;
 }) {
   return (
-    <div className="mb-6 rounded-2xl border border-[#d9e7df] bg-white p-4 shadow-[0_12px_32px_-24px_rgba(18,62,41,0.5)] dark:border-white/10 dark:bg-[#121e18]">
+    <div className="mb-6 rounded-lg border border-swc-line bg-swc-mint p-4">
       <div className="flex items-center gap-3">
-        <span className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-full bg-[#2D6A4F] text-sm font-bold text-white" aria-hidden="true">
+        <span className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-full bg-swc-deep text-sm font-bold text-white" aria-hidden="true">
           {initials(account) || "?"}
         </span>
         <div className="min-w-0 flex-1">
-          <p className="truncate text-[0.95rem] font-semibold text-[#10231a] dark:text-white">{account.name || account.email}</p>
-          {account.name && <p className="truncate text-[0.82rem] text-gray-500 dark:text-gray-400">{account.email}</p>}
+          <p className="truncate text-[0.95rem] font-semibold text-swc-ink">{account.name || account.email}</p>
+          {account.name && <p className="truncate text-[0.84rem] text-swc-ink-3">{account.email}</p>}
         </div>
       </div>
       <button
         type="button"
         onClick={onContinue}
         disabled={busy}
-        className="group mt-4 flex h-[54px] w-full items-center justify-center gap-3 rounded-full bg-[#14402F] dark:bg-[#2D6A4F] text-[0.98rem] font-semibold text-white shadow-lg shadow-green-900/20 transition-colors hover:bg-[#1e4d38] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2D6A4F] focus-visible:ring-offset-2 disabled:cursor-progress disabled:opacity-80 dark:focus-visible:ring-offset-[#0b1410]"
+        className="swc-btn swc-btn--green mt-4 w-full gap-3 disabled:cursor-progress"
       >
-        {busy ? <IconSpinner className="h-5 w-5 animate-spin text-white/90" /> : <Fingerprint className="h-6 w-6 transition-transform duration-200 group-hover:scale-110" aria-hidden="true" />}
+        {busy ? <IconSpinner className="h-5 w-5 animate-spin text-white/90" /> : <Fingerprint className="h-6 w-6" aria-hidden="true" />}
         {busy ? "Waiting for your fingerprint or face…" : "Continue with fingerprint or face"}
       </button>
       <div className="mt-3 flex flex-wrap items-center justify-between gap-2 text-[0.84rem]">
-        <button type="button" onClick={onUseAnother} className="min-h-[40px] rounded-md font-semibold text-[#2D6A4F] hover:underline dark:text-[#95d5b2]">
+        <button type="button" onClick={onUseAnother} className="min-h-[40px] rounded font-semibold text-swc-label underline underline-offset-4 hover:text-swc-ink">
           Use another account
         </button>
         <button
           type="button"
           onClick={() => forgetPasskeyAccount(account.email)}
-          className="min-h-[40px] rounded-md text-gray-500 hover:text-gray-800 hover:underline dark:text-gray-400 dark:hover:text-gray-200"
+          className="min-h-[40px] rounded text-swc-ink-2 underline underline-offset-4 hover:text-swc-ink"
         >
           Not you? Forget this account
         </button>
@@ -174,21 +174,21 @@ export function PasskeyContinueCard({
 /** Fingerprint button shown under the form when the typed account has a passkey. */
 export function PasskeyButton({ busy, disabled, onClick }: { busy: boolean; disabled?: boolean; onClick: () => void }) {
   return (
-    <div className="swcl-passkey-rise">
+    <div>
       <button
         type="button"
         onClick={onClick}
         disabled={busy || disabled}
-        className="group flex h-[56px] w-full items-center justify-center gap-3 rounded-full border-[1.5px] border-[#2D6A4F]/40 bg-[#f3faf6] text-[0.98rem] font-semibold text-[#10231a] transition-colors duration-150 hover:border-[#2D6A4F] hover:bg-[#e8f5ee] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2D6A4F] focus-visible:ring-offset-2 disabled:cursor-progress disabled:opacity-70 dark:border-[#74c69d]/40 dark:bg-[#132119] dark:text-white dark:hover:border-[#74c69d] dark:focus-visible:ring-[#74c69d] dark:focus-visible:ring-offset-[#0b1410]"
+        className="swc-btn swc-btn--outline w-full gap-3 disabled:cursor-progress"
       >
         {busy ? (
-          <IconSpinner className="h-5 w-5 animate-spin text-[#2D6A4F] dark:text-[#95d5b2]" />
+          <IconSpinner className="h-5 w-5 animate-spin text-swc-label" />
         ) : (
-          <Fingerprint className="h-6 w-6 text-[#2D6A4F] transition-transform duration-200 group-hover:scale-110 dark:text-[#95d5b2]" aria-hidden="true" />
+          <Fingerprint className="h-6 w-6 text-swc-label" aria-hidden="true" />
         )}
         {busy ? "Waiting for your fingerprint or face…" : "Sign in with fingerprint or face"}
       </button>
-      <p className="mt-2 text-center text-[0.8rem] text-gray-500 dark:text-gray-400">This account has a passkey. No password needed.</p>
+      <p className="mt-2 text-center text-[0.84rem] text-swc-ink-3">This account has a passkey. No password needed.</p>
     </div>
   );
 }

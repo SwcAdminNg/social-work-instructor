@@ -3,7 +3,9 @@
 import { useState, useRef, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
+import { CheckCircle2 } from "lucide-react";
 import { AuthPageShell } from "./shared/AuthPageShell";
+import { AuthHeading, AuthMessage, authButton, authLink } from "./shared/AuthUI";
 import { PasswordChecklist, PASSWORD_MIN } from "./shared/PasswordChecklist";
 import { FloatingInput } from "./shared/FloatingInput";
 import { PasswordToggle } from "./shared/PasswordToggle";
@@ -90,33 +92,15 @@ function ResetPasswordForm({ statsData }: { statsData?: any }) {
   if (done) {
     return (
       <AuthPageShell variant="reset-password" statsData={statsData}>
-        <div className="mb-8">
-          <p className="sw-eyebrow text-accent mb-4">
-            All set
-          </p>
-          <h1
-            ref={doneHeadingRef}
-            tabIndex={-1}
-            className="sw-display text-[2.1rem] sm:text-[2.6rem] text-ink mb-3 outline-none"
-          >
-            Password reset
-          </h1>
-          <p className="text-[0.98rem] text-ink-2">
-            Your password has been changed successfully. You can now sign in
-            with your new password.
-          </p>
-        </div>
+        <AuthHeading
+          icon={<CheckCircle2 className="h-5 w-5" />}
+          eyebrow="All set"
+          title="Password reset"
+          headingRef={doneHeadingRef}
+          intro="Your password has been changed successfully. You can now sign in with your new password."
+        />
 
-        <Link
-          href="/login"
-          className={`
-            flex items-center justify-center gap-2 mt-2 w-full h-[56px] rounded-full font-semibold text-[0.98rem] text-white no-underline
-            bg-[#14402F] hover:bg-[#0c2a1e] dark:bg-[#2D6A4F] dark:hover:bg-[#3d8c68]
-            shadow-lg shadow-green-900/20 hover:shadow-green-900/30
-            transition-all duration-200 hover:-translate-y-0.5
-            focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2D6A4F] focus-visible:ring-offset-2
-          `}
-        >
+        <Link href="/login" className={authButton}>
           Continue to sign in
           <IconArrowRight />
         </Link>
@@ -126,27 +110,15 @@ function ResetPasswordForm({ statsData }: { statsData?: any }) {
 
   return (
     <AuthPageShell variant="reset-password" statsData={statsData}>
-      {/* Heading */}
-      <div className="mb-8">
-        <p className="sw-eyebrow text-accent mb-4">
-          Set new password
-        </p>
-        <h1 className="sw-display text-[2.1rem] sm:text-[2.6rem] text-ink mb-3">
-          Reset your password
-        </h1>
-        <p className="text-[0.98rem] text-ink-2">
-          Your new password must be different from previously used passwords.
-        </p>
-      </div>
+      <AuthHeading
+        eyebrow="Set new password"
+        title="Reset your password"
+        intro="Your new password must be different from previously used passwords."
+      />
 
-      {error && (
-        <div role="alert" aria-live="assertive" className="mb-4 p-3 rounded-2xl bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/20 text-red-600 dark:text-red-400 text-sm font-medium">
-          {error}
-        </div>
-      )}
+      {error && <AuthMessage>{error}</AuthMessage>}
 
-      {/* Form */}
-      <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-4">
+      <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-5">
         <FloatingInput
           ref={passwordRef}
           id="password"
@@ -195,40 +167,23 @@ function ResetPasswordForm({ statsData }: { statsData?: any }) {
         />
         {password && <PasswordChecklist id="reset-password-rules" password={password} confirm={confirmPassword} />}
 
-        {/* Submit button */}
-        <button
-          type="submit"
-          disabled={loading}
-          className={`
-            relative mt-2 w-full h-[56px] rounded-full font-semibold text-[0.98rem] text-white
-            bg-[#14402F] hover:bg-[#0c2a1e] dark:bg-[#2D6A4F] dark:hover:bg-[#3d8c68]
-            shadow-lg shadow-green-900/20 hover:shadow-green-900/30
-            transition-all duration-200 hover:-translate-y-0.5
-            focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2D6A4F] focus-visible:ring-offset-2
-            disabled:opacity-70 disabled:cursor-not-allowed disabled:translate-y-0
-            overflow-hidden
-          `}
-        >
+        <button type="submit" disabled={loading} className={`${authButton} mt-1`}>
           {loading ? (
-            <span className="flex items-center justify-center gap-2.5">
-              <IconSpinner className="w-4 h-4 text-white/80" />
+            <>
+              <IconSpinner className="h-4 w-4 text-white/80" />
               Resetting…
-            </span>
+            </>
           ) : (
-            <span className="flex items-center justify-center gap-2">
+            <>
               Reset password
               <IconArrowRight />
-            </span>
+            </>
           )}
         </button>
       </form>
 
-      {/* Login link */}
-      <p className="mt-6 text-center text-[0.85rem] text-gray-500 dark:text-gray-400">
-        <Link
-          href="/login"
-          className="font-semibold text-[#2D6A4F] dark:text-[#52b788] hover:text-[#1e4d38] dark:hover:text-white no-underline transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2D6A4F] dark:focus-visible:ring-[#52b788] rounded"
-        >
+      <p className="mt-7 text-center text-[0.92rem]">
+        <Link href="/login" className={authLink}>
           Back to sign in
         </Link>
       </p>
@@ -241,7 +196,7 @@ export default function ResetPassword({ statsData }: { statsData?: any }) {
     <Suspense fallback={
       <AuthPageShell variant="reset-password" statsData={statsData}>
         <div className="flex items-center justify-center p-10">
-          <IconSpinner className="w-6 h-6 text-[#2D6A4F] dark:text-[#52b788] animate-spin" />
+          <IconSpinner className="h-6 w-6 animate-spin text-swc-label" />
         </div>
       </AuthPageShell>
     }>

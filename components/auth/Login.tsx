@@ -5,6 +5,7 @@ import { signIn } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { AuthPageShell } from "./shared/AuthPageShell";
+import { AuthDivider, AuthHeading, AuthMessage, authButton, authLink } from "./shared/AuthUI";
 import { FloatingInput } from "./shared/FloatingInput";
 import { PasswordToggle } from "./shared/PasswordToggle";
 import { PasskeyButton, PasskeyContinueCard, usePasskeySignIn } from "./shared/PasskeySignIn";
@@ -121,11 +122,7 @@ export default function Login({ statsData }: { statsData?: any }) {
   if (step.name === "setup") {
     return (
       <AuthPageShell variant="login" statsData={statsData}>
-        {finalizeError && (
-          <div role="alert" aria-live="assertive" className="mb-4 p-3 rounded-2xl bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/20 text-red-600 dark:text-red-400 text-sm font-medium">
-            {finalizeError}
-          </div>
-        )}
+        {finalizeError && <AuthMessage>{finalizeError}</AuthMessage>}
         <TwoFactorSetup
           api={{ kind: "challenge", challengeToken: step.challengeToken }}
           title="Set up two-factor authentication"
@@ -140,11 +137,7 @@ export default function Login({ statsData }: { statsData?: any }) {
   if (step.name === "verify") {
     return (
       <AuthPageShell variant="login" statsData={statsData}>
-        {finalizeError && (
-          <div role="alert" aria-live="assertive" className="mb-4 p-3 rounded-2xl bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/20 text-red-600 dark:text-red-400 text-sm font-medium">
-            {finalizeError}
-          </div>
-        )}
+        {finalizeError && <AuthMessage>{finalizeError}</AuthMessage>}
         <TwoFactorVerify
           challengeToken={step.challengeToken}
           method={step.method}
@@ -157,26 +150,14 @@ export default function Login({ statsData }: { statsData?: any }) {
 
   return (
     <AuthPageShell variant="login" statsData={statsData}>
-      {/* Heading */}
-      <div className="mb-8">
-        <p className="sw-eyebrow text-accent mb-4">
-          Welcome back
-        </p>
-        <h1 className="sw-display text-[2.1rem] sm:text-[2.6rem] text-ink mb-3">
-          Sign in to your account
-        </h1>
-        <p className="text-[0.98rem] text-ink-2">
-          Continue to your instructor workspace on Social Work Nigeria.
-        </p>
-      </div>
+      <AuthHeading
+        eyebrow="Welcome back"
+        title="Sign in to your account"
+        intro="Continue to your instructor workspace on Social Work Nigeria."
+      />
 
-      {error && (
-        <div role="alert" aria-live="assertive" className="mb-4 p-3 rounded-2xl bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/20 text-red-600 dark:text-red-400 text-sm font-medium">
-          {error}
-        </div>
-      )}
+      {error && <AuthMessage>{error}</AuthMessage>}
 
-      {/* Form */}
       {passkey.continueAccount && (
         <>
           <PasskeyContinueCard
@@ -185,16 +166,11 @@ export default function Login({ statsData }: { statsData?: any }) {
             onContinue={() => passkey.start(passkey.continueAccount?.email)}
             onUseAnother={() => emailRef.current?.focus()}
           />
-          <div className="flex items-center gap-3 mb-5" aria-hidden="true">
-            <div className="flex-1 h-px bg-gray-200 dark:bg-white/10" />
-            <span className="text-[0.75rem] text-gray-500 font-medium">or sign in with your password</span>
-            <div className="flex-1 h-px bg-gray-200 dark:bg-white/10" />
-          </div>
+          <AuthDivider className="mb-5">or sign in with your password</AuthDivider>
         </>
       )}
 
-      <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-4">
-        {/* Email or Username */}
+      <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-5">
         <FloatingInput
           ref={emailRef}
           id="identifier"
@@ -211,7 +187,6 @@ export default function Login({ statsData }: { statsData?: any }) {
           error={emailError}
         />
 
-        {/* Password */}
         <FloatingInput
           ref={passwordRef}
           id="password"
@@ -235,70 +210,46 @@ export default function Login({ statsData }: { statsData?: any }) {
           }
         />
 
-        {/* Keep me logged in + Forgot password */}
-        <div className="flex items-center justify-between pt-0.5">
-          {/* Custom checkbox */}
-          <label className="flex items-center gap-2 cursor-pointer group select-none">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <label className="group flex cursor-pointer select-none items-center gap-2">
             <button
               type="button"
               role="checkbox"
               aria-checked={keepLoggedIn}
               aria-label="Keep me logged in"
               onClick={() => setKeepLoggedIn((v) => !v)}
-              className="w-6 h-6 flex-shrink-0 flex items-center justify-center rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2D6A4F] dark:focus-visible:ring-[#52b788] focus-visible:ring-offset-1"
+              className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded"
             >
               <span
                 aria-hidden="true"
-                className={`
-                  w-[18px] h-[18px] rounded-[5px] border-2 flex items-center justify-center
-                  transition-all duration-150
-                  ${
-                    keepLoggedIn
-                      ? "bg-[#2D6A4F] border-[#2D6A4F] dark:bg-[#2D6A4F] dark:border-[#2D6A4F]"
-                      : "bg-white dark:bg-white/5 border-gray-300 dark:border-white/20 group-hover:border-[#2D6A4F] dark:group-hover:border-[#52b788]"
-                  }
-                `}
+                className={`flex h-[20px] w-[20px] items-center justify-center rounded-[4px] border-2 text-white ${
+                  keepLoggedIn
+                    ? "border-swc-deep bg-swc-deep dark:border-swc-mid dark:bg-swc-mid"
+                    : "border-swc-ink-3 bg-swc-card group-hover:border-swc-label"
+                }`}
               >
                 {keepLoggedIn && <IconCheck />}
               </span>
             </button>
-            <span className="text-[0.83rem] text-gray-600 dark:text-gray-400 group-hover:text-gray-800 dark:group-hover:text-gray-200 transition-colors duration-150">
-              Keep me logged in
-            </span>
+            <span className="text-[0.9rem] text-swc-ink-2">Keep me logged in</span>
           </label>
 
-          <Link
-            href="/forgot-password"
-            className="text-[0.83rem] font-semibold text-[#2D6A4F] dark:text-[#52b788] hover:text-[#1e4d38] dark:hover:text-white no-underline transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2D6A4F] dark:focus-visible:ring-[#52b788] rounded"
-          >
+          <Link href="/forgot-password" className={`text-[0.9rem] ${authLink}`}>
             Forgot password?
           </Link>
         </div>
 
-        {/* Submit button */}
-        <button
-          type="submit"
-          disabled={loading}
-          className={`
-            relative mt-2 w-full h-[56px] rounded-full font-semibold text-[0.98rem] text-white
-            bg-[#14402F] hover:bg-[#0c2a1e] dark:bg-[#2D6A4F] dark:hover:bg-[#3d8c68]
-            shadow-lg shadow-green-900/20 hover:shadow-green-900/30
-            transition-all duration-200 hover:-translate-y-0.5
-            focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2D6A4F] focus-visible:ring-offset-2
-            disabled:opacity-70 disabled:cursor-not-allowed disabled:translate-y-0
-            overflow-hidden
-          `}
-        >
+        <button type="submit" disabled={loading} className={`${authButton} mt-1`}>
           {loading ? (
-            <span className="flex items-center justify-center gap-2.5">
-              <IconSpinner className="w-4 h-4 text-white/80" />
+            <>
+              <IconSpinner className="h-4 w-4 text-white/80" />
               Signing in…
-            </span>
+            </>
           ) : (
-            <span className="flex items-center justify-center gap-2">
+            <>
               Sign in
               <IconArrowRight />
-            </span>
+            </>
           )}
         </button>
       </form>
@@ -306,42 +257,25 @@ export default function Login({ statsData }: { statsData?: any }) {
       {/* Passkey: only when this account can use one */}
       {passkey.availableForTyped && !passkey.continueAccount && (
         <>
-          <div className="flex items-center gap-3 my-5" aria-hidden="true">
-            <div className="flex-1 h-px bg-gray-200 dark:bg-white/10" />
-            <span className="text-[0.75rem] text-gray-500 dark:text-gray-500 font-medium">or</span>
-            <div className="flex-1 h-px bg-gray-200 dark:bg-white/10" />
-          </div>
+          <AuthDivider>or</AuthDivider>
           <PasskeyButton busy={passkey.busy} disabled={loading} onClick={() => passkey.start(email)} />
         </>
       )}
 
-      <div className="my-6" aria-hidden="true" />
-
-      {/* Register link */}
-      <p className="text-center text-[0.85rem] text-gray-500 dark:text-gray-400">
-        Don't have an account?{" "}
-        <Link
-          href="/register"
-          className="font-semibold text-[#2D6A4F] dark:text-[#52b788] hover:text-[#1e4d38] dark:hover:text-white no-underline transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2D6A4F] dark:focus-visible:ring-[#52b788] rounded"
-        >
+      <p className="mt-7 text-center text-[0.92rem] text-swc-ink-2">
+        Don&apos;t have an account?{" "}
+        <Link href="/register" className={authLink}>
           Create an account
         </Link>
       </p>
 
-      {/* Footer note */}
-      <p className="mt-10 text-center text-[0.72rem] text-gray-500 dark:text-gray-600 leading-relaxed">
+      <p className="mt-6 border-t border-swc-line pt-5 text-center text-[0.8rem] leading-relaxed text-swc-ink-3">
         By signing in, you agree to our{" "}
-        <Link
-          href="/terms-of-service"
-          className="underline hover:text-[#2D6A4F] dark:hover:text-[#52b788] transition-colors duration-150"
-        >
+        <Link href="/terms-of-service" className={authLink}>
           Terms of Service
         </Link>{" "}
         and{" "}
-        <Link
-          href="/privacy-policy"
-          className="underline hover:text-[#2D6A4F] dark:hover:text-[#52b788] transition-colors duration-150"
-        >
+        <Link href="/privacy-policy" className={authLink}>
           Privacy Policy
         </Link>
         .
